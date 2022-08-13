@@ -1,24 +1,24 @@
 {
 	"schema_version": 1,
 	"quilt_loader": {
-		"group": "io.github.tropheusj",
-		"id": "modid",
+		"group": "one.devos.nautical",
+		"id": "succ",
 		"version": "${version}",
 		"metadata": {
-			"name": "Modid",
-			"description": "A short description of your mod.",
+			"name": "Succ™",
+			"description": "A Minecraft mod about suction cups. Made for Modfest: Singularity.",
 			"contributors": {
-				"Tropheus Jay": "Owner"
+				"devOS: Sanity Edition, Team Nautical": "Owner"
 			},
 			"contact": {
-				"issues": "https://github.com/TropheusJ/quilt-template-mod/issues",
-				"sources": "https://github.com/TropheusJ/quilt-template-mod"
+				"issues": "https://github.com/devOS-Sanity-Edition/succ/issues",
+				"sources": "https://github.com/devOS-Sanity-Edition/succ"
 			},
-			"icon": "assets/modid/icon.png"
+			"icon": "assets/succ/icon.png"
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "io.github.tropheusj.modid.ExampleMod"
+			"init": "one.devos.nautical.succ.Succ"
 		},
 		"depends": [
 			{
@@ -35,5 +35,5 @@
 			}
 		]
 	},
-	"mixin": "modid.mixins.json"
+	"mixin": "succ.mixins.json"
 }

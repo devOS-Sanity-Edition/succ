@@ -1,26 +1,26 @@
 {
 	"schema_version": 1,
 	"quilt_loader": {
-		"group": "io.github.tropheusj",
-		"id": "modid_test",
+		"group": "one.devos.nautical",
+		"id": "succ_test",
 		"version": "1.0.0",
 		"metadata": {
-			"name": "Modid Test",
-			"description": "A short description of your mod.",
+			"name": "Succ™ Test",
+			"description": "Test mod for Succ™.",
 			"contributors": {
-				"Tropheus Jay": "Owner"
+        "devOS: Sanity Edition, Team Nautical": "Owner"
 			},
 			"contact": {
-				"issues": "https://github.com/TropheusJ/quilt-template-mod/issues",
-				"sources": "https://github.com/TropheusJ/quilt-template-mod"
+				"issues": "https://github.com/devOS-Sanity-Edition/succ/issues",
+				"sources": "https://github.com/devOS-Sanity-Edition/succ"
 			},
-			"icon": "assets/modid_test/icon.png"
+			"icon": "assets/succ_test/icon.png"
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "io.github.tropheusj.modid_test.ExampleModTest",
+			"init": "one.devos.nautical.succ_test.SuccTest",
       "fabric-gametest": [
-        "io.github.tropheusj.modid_test.gametest.ExampleModGameTest"
+        "one.devos.nautical.succ_test.gametest.SuccGameTest"
       ]
 		}
 	}
