@@ -1,11 +1,13 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "one.devos.nautical.mixin",
+  "package": "one.devos.nautical.succ.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
   ],
   "client": [
+    "KeyMappingMixin",
+    "KeyMappingAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

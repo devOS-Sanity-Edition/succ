@@ -18,7 +18,8 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "one.devos.nautical.succ.Succ"
+			"init": "one.devos.nautical.succ.Succ",
+      "client_init": "one.devos.nautical.succ.SuccClient"
 		},
 		"depends": [
 			{
@@ -35,5 +36,8 @@
 			}
 		]
 	},
-	"mixin": "succ.mixins.json"
+	"mixin": "succ.mixins.json",
+  "loom:injected_interfaces": {
+    "net/minecraft/class_304": [ "one/devos/nautical/succ/mixin/KeyMappingAccessor" ]
+  }
 }
