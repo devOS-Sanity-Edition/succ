@@ -2,7 +2,6 @@ package one.devos.nautical.succ;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -11,25 +10,23 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 
+import org.apache.commons.lang3.tuple.Triple;
+
 import javax.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 @Environment(EnvType.CLIENT)
 public class LocalClimbingManager {
 	public static final int DEFAULT_ROTATION_RANGE = 100;
-	public static final Map<KeyMapping, Vec3> OFFSETS = Util.make(new IdentityHashMap<>(), map -> {
-		map.put(SuccKeybinds.LEFT_HAND, new Vec3(-0.5, 1, 0));
-		map.put(SuccKeybinds.RIGHT_HAND, new Vec3(0.5, 1, 0));
-		map.put(SuccKeybinds.LEFT_FOOT, new Vec3(-0.5, 0.1, 0));
-		map.put(SuccKeybinds.RIGHT_FOOT, new Vec3(0.5, 0.1, 0));
-	});
 
-	private final Stack<KeyMapping> unsuckedCups = new Stack<>();
-	private final Map<KeyMapping, SuctionCupState> cups;
+	public final Stack<SuctionCupLimb> unsuckedCups = new Stack<>();
+	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups;
+	public final Map<SuctionCupLimb, ClimbingSuctionCupEntity> limbToEntity;
 	public float minYaw, maxYaw, minPitch, maxPitch;
 
 	/**
@@ -39,15 +36,22 @@ public class LocalClimbingManager {
 	public static LocalClimbingManager INSTANCE = null;
 
 	public LocalClimbingManager(Minecraft mc) {
-		cups = new HashMap<>();
+		cups = new ArrayList<>();
+		limbToEntity = new HashMap<>();
 		LocalPlayer player = mc.player;
 		Direction facing = Direction.fromYRot(player.getYRot()); // player will be facing at the wall
 		Vec3 pos = player.position();
-		for (KeyMapping key : SuccKeybinds.CLIMBING_KEYS) {
-			Vec3 offset = OFFSETS.get(key);
-			Vec3 cupPos = pos.add(offset);
-			cups.put(key, new SuctionCupState(cupPos, facing));
-		}
+//		SuctionCupLimb[] limbs = SuctionCupLimb.values();
+//		KeyMapping[] keys = SuccKeybinds.CLIMBING_KEYS;
+//		for (int i = 0; i < 4; i++) {
+//			SuctionCupLimb limb = limbs[i];
+//			KeyMapping key = keys[i];
+//			Vec3 offset = SuctionCupLimb.INITIAL_POS_OFFSETS.get(limb);
+//			Vec3 cupPos = pos.add(offset);
+//			SuctionCupState state = new SuctionCupState(cupPos, facing);
+//			cups.add(Triple.of(key, limb, state));
+//			limbToState.put(limb, state);
+//		}
 
 		float playerYaw = player.getYRot();
 		minYaw = playerYaw - (DEFAULT_ROTATION_RANGE / 2f);
@@ -78,22 +82,25 @@ public class LocalClimbingManager {
 		if (unsuckedCups.empty()) {
 			return;
 		}
-		KeyMapping moving = unsuckedCups.peek();
-		SuctionCupState state = cups.get(moving);
+		SuctionCupLimb moving = unsuckedCups.peek();
+		ClimbingSuctionCupEntity state = limbToEntity.get(moving);
 		SuctionCupMoveDirection lastMoveDirection = state.moveDirection;
 		state.moveDirection = SuctionCupMoveDirection.findFromInputs(options);
 	}
 
 	private void handleSuctionStateChanges() {
-		cups.forEach((key, state) -> {
+		cups.forEach((triple) -> {
+			KeyMapping key = triple.getLeft();
+			ClimbingSuctionCupEntity entity = triple.getRight();
+			SuctionCupLimb limb = triple.getMiddle();
 			if (key.consumeClick()) {
-				boolean suction = state.suction;
+				boolean suction = entity.suction;
 				if (suction) { // was on the wall, now will not be
-					unsuckedCups.push(key);
-					state.suction = false;
+					unsuckedCups.push(limb);
+					entity.suction = false;
 				} else { // placed onto the wall
 					unsuckedCups.pop();
-					state.suction = true;
+					entity.suction = true;
 				}
 			}
 			while (key.consumeClick()); // get rid of extras

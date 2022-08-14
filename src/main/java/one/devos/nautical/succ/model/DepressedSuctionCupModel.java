@@ -14,6 +14,7 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.world.entity.Entity;
 import one.devos.nautical.succ.Succ;
 
@@ -23,7 +24,8 @@ public class DepressedSuctionCupModel extends EntityModel<Entity> {
 
 	private final ModelPart depressed_suction_cup;
 
-	public DepressedSuctionCupModel(ModelPart root) {
+	public DepressedSuctionCupModel(Context ctx) {
+		ModelPart root = ctx.bakeLayer(LAYER);
 		this.depressed_suction_cup = root.getChild("depressed_suction_cup");
 	}
 

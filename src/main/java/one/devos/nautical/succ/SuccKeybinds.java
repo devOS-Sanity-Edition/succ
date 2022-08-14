@@ -3,6 +3,7 @@ package one.devos.nautical.succ;
 import com.mojang.blaze3d.platform.InputConstants.Type;
 
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
@@ -10,6 +11,9 @@ import net.minecraft.world.entity.player.Player;
 import one.devos.nautical.succ.mixin.KeyMappingAccessor;
 
 import org.lwjgl.glfw.GLFW;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class SuccKeybinds {
 	public static final KeyMapping LEFT_HAND = KeyBindingHelper.registerKeyBinding(
@@ -21,6 +25,13 @@ public class SuccKeybinds {
 	public static final KeyMapping RIGHT_FOOT = KeyBindingHelper.registerKeyBinding(
 			new KeyMapping("key.succ.rightFoot", GLFW.GLFW_KEY_SPACE, "key.categories.succ"));
 	public static final KeyMapping[] CLIMBING_KEYS = { LEFT_HAND, RIGHT_HAND, LEFT_FOOT, RIGHT_FOOT };
+
+	public static final Map<SuctionCupLimb, KeyMapping> LIMBS_TO_KEYS = Util.make(new IdentityHashMap<>(), map -> {
+		map.put(SuctionCupLimb.LEFT_HAND, SuccKeybinds.LEFT_HAND);
+		map.put(SuctionCupLimb.RIGHT_HAND, SuccKeybinds.RIGHT_HAND);
+		map.put(SuctionCupLimb.LEFT_FOOT, SuccKeybinds.LEFT_FOOT);
+		map.put(SuctionCupLimb.RIGHT_FOOT, SuccKeybinds.RIGHT_FOOT);
+	});
 
 	public static final KeyMapping STOP = KeyBindingHelper.registerKeyBinding(
 			new KeyMapping("key.succ.stop", GLFW.GLFW_KEY_SEMICOLON, "key.categories.succ"));

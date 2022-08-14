@@ -2,6 +2,7 @@ package one.devos.nautical.succ;
 
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.Minecraft;
 import one.devos.nautical.succ.model.DepressedSuctionCupModel;
 import one.devos.nautical.succ.model.SuctionCupModel;
@@ -16,9 +17,12 @@ public class SuccClient implements ClientModInitializer {
 	public void onInitializeClient(ModContainer mod) {
 		SuccKeybinds.init();
 		GlobalClimbingManager.clientInit();
+		ClimbingSuctionCupEntity.clientInit();
 
 		EntityModelLayerRegistry.registerModelLayer(SuctionCupModel.LAYER, SuctionCupModel::getLayerDefinition);
 		EntityModelLayerRegistry.registerModelLayer(DepressedSuctionCupModel.LAYER, DepressedSuctionCupModel::getLayerDefinition);
+
+		EntityRendererRegistry.register(Succ.SUCTION_CUP_ENTITY_TYPE, SuctionCupEntityRenderer::new);
 
 		ClientTickEvents.START.register(SuccClient::onClientTick);
 		ClientPlayConnectionEvents.DISCONNECT.register(LocalClimbingManager::onDisconnect);
