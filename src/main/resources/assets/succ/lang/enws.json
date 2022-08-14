@@ -1,0 +1,16 @@
+{
+  "entity.succ.suction_cup": "Suction cuppeth",
+  "item.succ.suction_cup": "Suction cuppeth",
+  "item.succ.suction_cup_boots": "Suction cuppeth boots",
+  "key.categories.succ": "Succ™",
+  "key.succ.leftHand": "Hath left handeth suction cuppeth",
+  "key.succ.rightHand": "Right handeth suction cuppeth",
+  "key.succ.leftFoot": "Hath left foot suction cuppeth",
+  "key.succ.rightFoot": "Right foot suction cuppeth",
+  "key.succ.stopClimbing": "Stand ho climbing",
+
+  "succ.tooFar": "This mure is too far hence to climb.",
+  "succ.missingCups": "Thee needeth suction cups on all 4 limbs to climb.",
+  "succ.obstructed": "Climbing h're shall lodging thee inside a block.",
+  "succ.onlyWalls": "Thee can only climb on walls."
+}
