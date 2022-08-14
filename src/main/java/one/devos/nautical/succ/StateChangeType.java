@@ -14,7 +14,7 @@ public enum StateChangeType {
 			mc.execute(() -> {
 				GlobalClimbingManager.CLIMBING_STATES.put(state.playerUuid, state);
 				LocalPlayer player = Minecraft.getInstance().player;
-				if (player != null && player.getUUID().equals(state.playerUuid)) {
+				if (state.climbing && player != null && player.getUUID().equals(state.playerUuid)) {
 					LocalClimbingManager.INSTANCE = new LocalClimbingManager(mc);
 				}
 			});
