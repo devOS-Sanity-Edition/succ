@@ -7,7 +7,9 @@
   ],
   "client": [
     "EntityMixin",
+    "InventoryMixin",
     "ItemInHandRendererMixin",
+    "KeyboardInputMixin",
     "KeyMappingAccessor",
     "KeyMappingMixin"
   ],

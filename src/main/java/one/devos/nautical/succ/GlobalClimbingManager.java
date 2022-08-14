@@ -49,6 +49,7 @@ public class GlobalClimbingManager {
 
 	public static void stopClimbing(ServerPlayer player) {
 		changeClimbingState(player, null, null, false);
+//		player.fallDistance = 0;
 	}
 
 	public static void reset() {
