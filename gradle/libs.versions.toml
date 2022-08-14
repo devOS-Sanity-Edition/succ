@@ -23,6 +23,8 @@ lithium_version = "mc1.19.2-0.8.3"
 iris_version = "1.19.x-v1.2.6"
 # https://modrinth.com/mod/modmenu
 mod_menu_version = "4.0.6"
+# https://modrinth.com/mod/emi
+emi_version = "0.3.3+1.19"
 
 [libraries]
 # dependencies
@@ -40,11 +42,12 @@ joml = { module = "org.joml:joml", version.ref = "joml_version" }
 lithium = { module = "maven.modrinth:lithium", version.ref = "lithium_version" }
 iris = { module = "maven.modrinth:iris", version.ref = "iris_version" }
 mod_menu = { module = "com.terraformersmc:modmenu", version.ref = "mod_menu_version" }
+emi = { module = "dev.emi:emi", version.ref = "emi_version" }
 
 [bundles]
 dev_mods = [ "lazydfu", "sugestion_tweaker", "cloth_config", "jade", "sodium", "joml",
 #		"lithium", todo crashes with hashed
-		"iris", "mod_menu" ]
+		"iris", "mod_menu", "emi" ]
 dependencies = [ "quilt_loader", "quilted_fabric_api" ]
 
 [plugins]
