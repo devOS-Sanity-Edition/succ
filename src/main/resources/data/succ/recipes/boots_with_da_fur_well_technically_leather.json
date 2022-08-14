@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "succ:suction_cup_boots"
+  },
+  "pattern": [
+    "l l",
+    "l l",
+    "c c"
+  ],
+  "key": {
+    "c": {
+      "item": "succ:suction_cup"
+    },
+    "l": {
+      "item": "minecraft:leather"
+    }
+  }
+}
