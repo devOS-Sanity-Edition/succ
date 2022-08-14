@@ -5,29 +5,27 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.Direction;
-import net.minecraft.world.phys.Vec3;
 
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 @Environment(EnvType.CLIENT)
 public class LocalClimbingManager {
 	public static final int DEFAULT_ROTATION_RANGE = 90;
 
-	public final Stack<SuctionCupLimb> unsuckedCups = new Stack<>();
-	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups;
-	public final Map<SuctionCupLimb, ClimbingSuctionCupEntity> limbToEntity;
-	public float minYaw, maxYaw, minPitch, maxPitch;
+	public final Stack<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> unsuckedCups = new Stack<>();
+	public final ClimbingState state;
+	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups = new ArrayList<>();
+	public final float minYaw, maxYaw, minPitch, maxPitch;
+	private int initialCooldown = 10;
 
 	/**
 	 * Non-null when climbing
@@ -36,23 +34,12 @@ public class LocalClimbingManager {
 	public static LocalClimbingManager INSTANCE = null;
 
 	public LocalClimbingManager(Minecraft mc) {
-		cups = new ArrayList<>();
-		limbToEntity = new HashMap<>();
+		this.state = GlobalClimbingManager.CLIMBING_STATES.get(mc.player.getUUID());
+		this.state.entities.forEach((limb, entity) -> {
+			KeyMapping key = SuccKeybinds.LIMBS_TO_KEYS.get(limb);
+			cups.add(Triple.of(key, limb, entity));
+		});
 		LocalPlayer player = mc.player;
-		Direction facing = Direction.fromYRot(player.getYRot()); // player will be facing at the wall
-		Vec3 pos = player.position();
-//		SuctionCupLimb[] limbs = SuctionCupLimb.values();
-//		KeyMapping[] keys = SuccKeybinds.CLIMBING_KEYS;
-//		for (int i = 0; i < 4; i++) {
-//			SuctionCupLimb limb = limbs[i];
-//			KeyMapping key = keys[i];
-//			Vec3 offset = SuctionCupLimb.INITIAL_POS_OFFSETS.get(limb);
-//			Vec3 cupPos = pos.add(offset);
-//			SuctionCupState state = new SuctionCupState(cupPos, facing);
-//			cups.add(Triple.of(key, limb, state));
-//			limbToState.put(limb, state);
-//		}
-
 		float playerYaw = player.getYRot();
 		minYaw = playerYaw - (DEFAULT_ROTATION_RANGE / 2f);
 		maxYaw = playerYaw + (DEFAULT_ROTATION_RANGE / 2f);
@@ -61,9 +48,9 @@ public class LocalClimbingManager {
 		maxPitch = playerPitch + (DEFAULT_ROTATION_RANGE / 2f);
 	}
 
-	public static void tick(Minecraft mc) {
+	public static void tick(Minecraft mc, ClientLevel level) {
 		if (INSTANCE != null) {
-			INSTANCE.tickClimbing(mc);
+			INSTANCE.tickClimbing(mc, level);
 		}
 	}
 
@@ -72,7 +59,8 @@ public class LocalClimbingManager {
 		GlobalClimbingManager.reset();
 	}
 
-	private void tickClimbing(Minecraft mc) {
+	private void tickClimbing(Minecraft mc, ClientLevel level) {
+		initialCooldown--;
 		handleSuctionStateChanges();
 		moveCups(mc.options);
 		makePlayerStickToWall(mc.player);
@@ -82,25 +70,31 @@ public class LocalClimbingManager {
 		if (unsuckedCups.empty()) {
 			return;
 		}
-		SuctionCupLimb moving = unsuckedCups.peek();
-		ClimbingSuctionCupEntity state = limbToEntity.get(moving);
-		SuctionCupMoveDirection lastMoveDirection = state.moveDirection;
-		state.moveDirection = SuctionCupMoveDirection.findFromInputs(options);
+//		Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup = unsuckedCups.peek();
+//		ClimbingSuctionCupEntity state = limbToEntity.get(moving);
+//		SuctionCupMoveDirection lastMoveDirection = state.moveDirection;
+//		state.moveDirection = SuctionCupMoveDirection.findFromInputs(options);
 	}
 
 	private void handleSuctionStateChanges() {
-		cups.forEach((triple) -> {
+		// give a short cooldown after starting to climb
+		if (initialCooldown > 0) {
+			cups.forEach(triple -> {
+				while (triple.getLeft().consumeClick()); // discard any clicks that happen here
+			});
+			return;
+		}
+		cups.forEach(triple -> {
 			KeyMapping key = triple.getLeft();
 			ClimbingSuctionCupEntity entity = triple.getRight();
-			SuctionCupLimb limb = triple.getMiddle();
 			if (key.consumeClick()) {
 				boolean suction = entity.suction;
 				if (suction) { // was on the wall, now will not be
-					unsuckedCups.push(limb);
-					entity.suction = false;
+					unsuckedCups.push(triple);
+					entity.setSuctionFromClient(false);
 				} else { // placed onto the wall
 					unsuckedCups.pop();
-					entity.suction = true;
+					entity.setSuctionFromClient(true);
 				}
 			}
 			while (key.consumeClick()); // get rid of extras

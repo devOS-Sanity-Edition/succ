@@ -33,9 +33,6 @@ public class SuccKeybinds {
 		map.put(SuctionCupLimb.RIGHT_FOOT, SuccKeybinds.RIGHT_FOOT);
 	});
 
-	public static final KeyMapping STOP = KeyBindingHelper.registerKeyBinding(
-			new KeyMapping("key.succ.stop", GLFW.GLFW_KEY_SEMICOLON, "key.categories.succ"));
-
 	public static void init() {
 	}
 
@@ -61,16 +58,11 @@ public class SuccKeybinds {
 				unpressMatching(climbingKey);
 			}
 		}
-
-		// TEMPORARY
-		while (STOP.consumeClick()) {
-			GlobalClimbingManager.stopClimbing(mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID()));
-		}
 	}
 
 	private static void unpressMatching(KeyMapping keyMapping) {
 		for (KeyMapping key : Minecraft.getInstance().options.keyMappings) {
-			if (keyMapping.same(key)) {
+			if (key != keyMapping && keyMapping.same(key)) {
 				setUnpressed(key);
 			}
 		}

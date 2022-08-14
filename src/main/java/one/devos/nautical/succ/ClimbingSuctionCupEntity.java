@@ -10,6 +10,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -23,6 +26,7 @@ import java.util.UUID;
 
 public class ClimbingSuctionCupEntity extends Entity {
 	public static final ResourceLocation SPAWN_PACKET = Succ.id("climbing_suction_cup_spawn");
+	public static final ResourceLocation UPDATE_SUCTION = Succ.id("update_suction");
 
 	public SuctionCupLimb limb;
 	public ClimbingState climbingState;
@@ -77,8 +81,35 @@ public class ClimbingSuctionCupEntity extends Entity {
 		climbingState.entities.put(limb, this);
 	}
 
+	public static void networkingInit() {
+		ServerPlayNetworking.registerGlobalReceiver(UPDATE_SUCTION, ClimbingSuctionCupEntity::handleSuctionUpdate);
+	}
+
+	public static void handleSuctionUpdate(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, FriendlyByteBuf buf, PacketSender responseSender) {
+		boolean newSuction = buf.readBoolean();
+		SuctionCupLimb limb = buf.readEnum(SuctionCupLimb.class);
+		server.execute(() -> {
+			ClimbingState state = GlobalClimbingManager.CLIMBING_STATES.get(player.getUUID());
+			if (!state.climbing) {
+				Succ.LOGGER.warn("Suction cup update from non-climbing player: [{}], [{}]", limb, player.getGameProfile().getName());
+				return;
+			}
+			ClimbingSuctionCupEntity entity = state.entities.get(limb);
+			entity.suction = newSuction;
+			// check if we should let go
+			for (ClimbingSuctionCupEntity cupEntity : state.entities.values()) {
+				if (cupEntity.suction) {
+					return;
+				}
+			}
+			// none have suction
+			GlobalClimbingManager.stopClimbing(player);
+		});
+	}
+
+
 	@Environment(EnvType.CLIENT)
-	public static void clientInit() {
+	public static void clientNetworkingInit() {
 		ClientPlayNetworking.registerGlobalReceiver(SPAWN_PACKET, ClimbingSuctionCupEntity::handleSpawnOnClient);
 	}
 
@@ -92,5 +123,14 @@ public class ClimbingSuctionCupEntity extends Entity {
 			entity.readExtraPacketData(buf);
 			buf.release();
 		});
+	}
+
+	@Environment(EnvType.CLIENT)
+	public void setSuctionFromClient(boolean suction) {
+		this.suction = suction;
+		FriendlyByteBuf buf = PacketByteBufs.create();
+		buf.writeBoolean(suction);
+		buf.writeEnum(limb);
+		ClientPlayNetworking.send(UPDATE_SUCTION, buf);
 	}
 }
