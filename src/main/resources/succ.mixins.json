@@ -11,7 +11,8 @@
     "ItemInHandRendererMixin",
     "KeyboardInputMixin",
     "KeyMappingAccessor",
-    "KeyMappingMixin"
+    "KeyMappingMixin",
+    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1
