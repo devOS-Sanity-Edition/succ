@@ -6,6 +6,8 @@ import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -43,7 +45,7 @@ public class SuctionCupItem extends Item {
 		}
 		Direction clickedFace = ctx.getClickedFace();
 		if (clickedFace.getAxis() == Axis.Y) {
-			player.sendSystemMessage(ONLY_WALLS);
+			fail(player, ONLY_WALLS);
 			return;
 		}
 		Level level = ctx.getLevel();
@@ -51,17 +53,17 @@ public class SuctionCupItem extends Item {
 			return;
 		}
 		if (missingCups(player)) {
-			player.sendSystemMessage(MISSING_CUPS);
+			fail(player, MISSING_CUPS);
 			return;
 		}
 		Vec3 clickPos = ctx.getClickLocation();
 		if (tooFar(player, clickPos)) {
-			player.sendSystemMessage(TOO_FAR);
+			fail(player, TOO_FAR);
 			return;
 		}
 
 		if (climbPosObstructed(player, level, clickPos, ctx.getClickedPos(), clickedFace)) {
-			player.sendSystemMessage(OBSTRUCTED);
+			fail(player, OBSTRUCTED);
 			return;
 		}
 		// offset to the center of the block to prevent getting stuck in adjacent walls
@@ -93,5 +95,10 @@ public class SuctionCupItem extends Item {
 			}
 		}
 		return false;
+	}
+
+	public static void fail(ServerPlayer player, Component reason) {
+		player.sendSystemMessage(reason, true);
+		player.playNotifySound(SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.PLAYERS, 1, 1f);
 	}
 }
