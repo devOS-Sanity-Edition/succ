@@ -5,9 +5,8 @@ import com.mojang.blaze3d.platform.InputConstants.Type;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
-import net.minecraft.client.player.LocalPlayer;
 
+import net.minecraft.world.entity.player.Player;
 import one.devos.nautical.succ.mixin.KeyMappingAccessor;
 
 import org.lwjgl.glfw.GLFW;
@@ -23,9 +22,8 @@ public class SuccKeybinds {
 			new KeyMapping("key.succ.rightFoot", GLFW.GLFW_KEY_SPACE, "key.categories.succ"));
 	public static final KeyMapping[] CLIMBING_KEYS = { LEFT_HAND, RIGHT_HAND, LEFT_FOOT, RIGHT_FOOT };
 
-	// TEMPORARY - will be replaced by picking up all cups
 	public static final KeyMapping STOP = KeyBindingHelper.registerKeyBinding(
-			new KeyMapping("key.succ.stopClimbing", GLFW.GLFW_KEY_SEMICOLON, "key.categories.succ"));
+			new KeyMapping("key.succ.stop", GLFW.GLFW_KEY_SEMICOLON, "key.categories.succ"));
 
 	public static void init() {
 	}
@@ -42,16 +40,20 @@ public class SuccKeybinds {
 		}
 	}
 
-	public static void tick() {
+	public static void tick(Minecraft mc) {
+		Player player = mc.player;
+		if (player == null)
+			return;
 		// while climbing, prevent normal uses of the cup keys
-		if (ClimbingManager.isClimbing()) {
+		if (GlobalClimbingManager.isClimbing(player)) {
 			for (KeyMapping climbingKey : CLIMBING_KEYS) {
 				unpressMatching(climbingKey);
 			}
 		}
 
+		// TEMPORARY
 		while (STOP.consumeClick()) {
-			ClimbingManager.stopClimbing();
+			GlobalClimbingManager.stopClimbing(mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID()));
 		}
 	}
 

@@ -6,5 +6,10 @@
   "key.succ.rightHand": "Right Hand Suction Cup",
   "key.succ.leftFoot": "Left Foot Suction Cup",
   "key.succ.rightFoot": "Right Foot Suction Cup",
-  "key.succ.stopClimbing": "Stop Climbing"
+  "key.succ.stopClimbing": "Stop Climbing",
+
+  "succ.tooFar": "This wall is too far away to climb.",
+  "succ.missingCups": "You need suction cups on all 4 limbs to climb.",
+  "succ.obstructed": "Climbing here will place you inside a block.",
+  "succ.onlyWalls": "You can only climb on walls."
 }

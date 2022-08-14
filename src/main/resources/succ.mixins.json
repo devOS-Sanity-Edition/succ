@@ -6,8 +6,9 @@
   "mixins": [
   ],
   "client": [
+    "KeyMappingAccessor",
     "KeyMappingMixin",
-    "KeyMappingAccessor"
+    "EntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
