@@ -22,7 +22,7 @@ import java.util.Stack;
 
 @Environment(EnvType.CLIENT)
 public class LocalClimbingManager {
-	public static final int DEFAULT_ROTATION_RANGE = 100;
+	public static final int DEFAULT_ROTATION_RANGE = 90;
 
 	public final Stack<SuctionCupLimb> unsuckedCups = new Stack<>();
 	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups;
