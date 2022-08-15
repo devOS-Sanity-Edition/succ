@@ -34,7 +34,7 @@ public class LocalClimbingManager {
 	public static LocalClimbingManager INSTANCE = null;
 
 	public LocalClimbingManager(Minecraft mc) {
-		this.state = GlobalClimbingManager.CLIMBING_STATES.get(mc.player.getUUID());
+		this.state = GlobalClimbingManager.getState(mc.player);
 		this.state.entities.forEach((limb, entity) -> {
 			KeyMapping key = SuccKeybinds.LIMBS_TO_KEYS.get(limb);
 			cups.add(Triple.of(key, limb, entity));
@@ -56,7 +56,7 @@ public class LocalClimbingManager {
 
 	public static void onDisconnect(ClientPacketListener handler, Minecraft client) {
 		INSTANCE = null;
-		GlobalClimbingManager.reset();
+		GlobalClimbingManager.get(true).reset();
 	}
 
 	private void tickClimbing(Minecraft mc, ClientLevel level) {
@@ -88,7 +88,7 @@ public class LocalClimbingManager {
 			KeyMapping key = triple.getLeft();
 			ClimbingSuctionCupEntity entity = triple.getRight();
 			if (key.consumeClick()) {
-				boolean suction = entity.suction;
+				boolean suction = entity.getSuction();
 				if (suction) { // was on the wall, now will not be
 					unsuckedCups.push(triple);
 					entity.setSuctionFromClient(false);

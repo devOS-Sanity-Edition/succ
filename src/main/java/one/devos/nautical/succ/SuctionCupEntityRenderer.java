@@ -32,10 +32,7 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 
 		matrices.scale(0.75f, 0.75f, 0.75f);
 		matrices.mulPose(Vector3f.XN.rotationDegrees(90));
-		double offsetFromWall = 1;
-		if (!entity.suction)
-			offsetFromWall = 1.4;
-		matrices.translate(0, -offsetFromWall, 0.35);
+		matrices.translate(0, -1.23, 0.35);
 
 		VertexConsumer consumer = vertexConsumers.getBuffer(cupModel.renderType(SuctionCupModel.TEXTURE));
 		this.cupModel.renderToBuffer(matrices, consumer, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);

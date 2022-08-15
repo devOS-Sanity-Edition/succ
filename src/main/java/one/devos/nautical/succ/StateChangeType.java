@@ -12,7 +12,7 @@ public enum StateChangeType {
 		public void handle(Minecraft mc, FriendlyByteBuf buf) {
 			ClimbingState state = new ClimbingState(buf);
 			mc.execute(() -> {
-				GlobalClimbingManager.CLIMBING_STATES.put(state.playerUuid, state);
+				GlobalClimbingManager.putState(state, true);
 				LocalPlayer player = Minecraft.getInstance().player;
 				if (state.climbing && player != null && player.getUUID().equals(state.playerUuid)) {
 					LocalClimbingManager.INSTANCE = new LocalClimbingManager(mc);
@@ -26,7 +26,7 @@ public enum StateChangeType {
 			UUID playerId = buf.readUUID();
 			boolean climbing = buf.readBoolean();
 			mc.execute(() -> {
-				GlobalClimbingManager.CLIMBING_STATES.get(playerId).climbing = climbing;
+				GlobalClimbingManager.getState(playerId, true).climbing = climbing;
 				LocalPlayer player = Minecraft.getInstance().player;
 				if (player != null && player.getUUID().equals(playerId)) {
 					LocalClimbingManager.INSTANCE = climbing ? new LocalClimbingManager(mc) : null;
@@ -39,7 +39,7 @@ public enum StateChangeType {
 		public void handle(Minecraft mc, FriendlyByteBuf buf) {
 			UUID toRemove = buf.readUUID();
 			mc.execute(() -> {
-				GlobalClimbingManager.CLIMBING_STATES.remove(toRemove);
+				GlobalClimbingManager.putState(toRemove, null, true);
 				LocalPlayer player = Minecraft.getInstance().player;
 				if (player != null && player.getUUID().equals(toRemove)) {
 					LocalClimbingManager.INSTANCE = null;

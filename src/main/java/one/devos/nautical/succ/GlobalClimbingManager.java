@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.PacketSender;
 import org.quiltmc.qsl.networking.api.PlayerLookup;
 import org.quiltmc.qsl.networking.api.ServerPlayNetworking;
@@ -32,9 +33,32 @@ import java.util.UUID;
  * Tracks climbing state of all players and syncs it to everyone.
  */
 public class GlobalClimbingManager {
-	protected static final Map<UUID, ClimbingState> CLIMBING_STATES = new HashMap<>();
 	public static final ResourceLocation STATE_CHANGE_PACKET = Succ.id("state_change");
 	public static final double START_CLIMB_POS_OFFSET = 0.30;
+
+	// we need a different manager on each side to prevent leaking state in singleplayer and lan
+	// the environment is the logical side here, not the physical side
+	private static final GlobalClimbingManager clientManager = new GlobalClimbingManager(EnvType.CLIENT);
+	private static final GlobalClimbingManager serverManager = new GlobalClimbingManager(EnvType.SERVER);
+
+	private final EnvType env;
+	private final Map<UUID, ClimbingState> states = new HashMap<>();
+
+	private GlobalClimbingManager(EnvType env) {
+		this.env = env;
+	}
+
+	public static GlobalClimbingManager get(Player player) {
+		return get(player.level);
+	}
+
+	public static GlobalClimbingManager get(Level level) {
+		return get(level.isClientSide());
+	}
+
+	public static GlobalClimbingManager get(boolean client) {
+		return client ? clientManager : serverManager;
+	}
 
 	public static void startClimbing(ServerPlayer player, Vec3 clickPos, Direction blockFace) {
 		Direction playerFacing = blockFace.getOpposite();
@@ -43,7 +67,7 @@ public class GlobalClimbingManager {
 	}
 
 	public static boolean isClimbing(Player player) {
-		ClimbingState state = CLIMBING_STATES.get(player.getUUID());
+		ClimbingState state = getState(player);
 		return state != null && state.climbing;
 	}
 
@@ -52,8 +76,36 @@ public class GlobalClimbingManager {
 //		player.fallDistance = 0;
 	}
 
-	public static void reset() {
-		CLIMBING_STATES.clear();
+	public static ClimbingState getState(Player player) {
+		return getState(player.getUUID(), get(player));
+	}
+
+	public static ClimbingState getState(UUID id, boolean client) {
+		return getState(id, get(client));
+	}
+
+	private static ClimbingState getState(UUID id, GlobalClimbingManager manager) {
+		return manager.states.get(id);
+	}
+
+	protected static void putState(ClimbingState state, boolean client) {
+		putState(state.playerUuid, state, client);
+	}
+
+	protected static void putState(UUID id, ClimbingState state, boolean client) {
+		putState(id, state, get(client));
+	}
+
+	protected static void putState(UUID id, ClimbingState state, GlobalClimbingManager manager) {
+		if (state == null) {
+			manager.states.remove(id);
+		} else {
+			manager.states.put(id, state);
+		}
+	}
+
+	protected void reset() {
+		states.clear();
 	}
 
 	private static void moveNewClimber(ServerPlayer player, Vec3 clickPos, Direction facing) {
@@ -70,8 +122,7 @@ public class GlobalClimbingManager {
 	}
 
 	private static void changeClimbingState(ServerPlayer player, @Nullable Vec3 clickPos, @Nullable Direction facing, boolean climbing) {
-		UUID uuid = player.getUUID();
-		ClimbingState state = CLIMBING_STATES.get(uuid);
+		ClimbingState state = getState(player);
 		state.climbing = climbing;
 		if (climbing && clickPos != null && facing != null) {
 			addCupEntities(player, state, clickPos, facing);
@@ -88,8 +139,7 @@ public class GlobalClimbingManager {
 		}
 		SuctionCupLimb.INITIAL_POS_OFFSETS.forEach((limb, offset) -> {
 			Vec3 cupPos = clickPos.add(offset);
-			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, state, facing);
-			entity.teleportTo(cupPos.x, cupPos.y, cupPos.z);
+			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, cupPos, state, facing);
 			level.addFreshEntity(entity);
 			state.entities.put(limb, entity);
 		});
@@ -106,12 +156,17 @@ public class GlobalClimbingManager {
 
 	public static void onPlayerJoin(ServerGamePacketListenerImpl handler, PacketSender sender, MinecraftServer server) {
 		ClimbingState newState = new ClimbingState(handler.player.getUUID());
-		CLIMBING_STATES.put(newState.playerUuid, newState);
-		CLIMBING_STATES.forEach((uuid, state) -> sender.sendPacket(STATE_CHANGE_PACKET, state.syncAllToNetwork()));
+		putState(newState, false);
+		get(false).states.forEach((uuid, state) -> sender.sendPacket(STATE_CHANGE_PACKET, state.syncAllToNetwork()));
 	}
 
 	public static void onPlayerLeave(ServerGamePacketListenerImpl handler, MinecraftServer server) {
-		CLIMBING_STATES.remove(handler.player.getUUID());
+		UUID id = handler.player.getUUID();
+		putState(id, null, false);
+		FriendlyByteBuf buf = PacketByteBufs.create();
+		buf.writeEnum(StateChangeType.REMOVE);
+		buf.writeUUID(id);
+		ServerPlayNetworking.send(PlayerLookup.all(server), STATE_CHANGE_PACKET,  buf);
 	}
 
 	@Environment(EnvType.CLIENT)
