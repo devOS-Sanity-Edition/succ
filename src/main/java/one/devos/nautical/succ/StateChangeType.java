@@ -2,6 +2,7 @@ package one.devos.nautical.succ;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.UUID;
@@ -14,7 +15,7 @@ public enum StateChangeType {
 			mc.execute(() -> {
 				GlobalClimbingManager.putState(state, true);
 				LocalPlayer player = Minecraft.getInstance().player;
-				if (state.climbing && player != null && player.getUUID().equals(state.playerUuid)) {
+				if (state.isClimbing() && player != null && player.getUUID().equals(state.playerUuid)) {
 					LocalClimbingManager.INSTANCE = new LocalClimbingManager(mc);
 				}
 			});
@@ -24,12 +25,14 @@ public enum StateChangeType {
 		@Override
 		public void handle(Minecraft mc, FriendlyByteBuf buf) {
 			UUID playerId = buf.readUUID();
-			boolean climbing = buf.readBoolean();
+			int ordinal = buf.readVarInt();
+			Direction facing = ordinal == -1 ? null : Direction.values()[ordinal];
 			mc.execute(() -> {
-				GlobalClimbingManager.getState(playerId, true).climbing = climbing;
+				ClimbingState state = GlobalClimbingManager.getState(playerId, true);
+				state.facing = facing;
 				LocalPlayer player = Minecraft.getInstance().player;
 				if (player != null && player.getUUID().equals(playerId)) {
-					LocalClimbingManager.INSTANCE = climbing ? new LocalClimbingManager(mc) : null;
+					LocalClimbingManager.INSTANCE = state.isClimbing() ? new LocalClimbingManager(mc) : null;
 				}
 			});
 		}

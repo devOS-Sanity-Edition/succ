@@ -26,6 +26,7 @@ public class SuccClient implements ClientModInitializer {
 		EntityRendererRegistry.register(Succ.SUCTION_CUP_ENTITY_TYPE, SuctionCupEntityRenderer::new);
 
 		ClientTickEvents.START.register(SuccKeybinds::tick);
+		ClientTickEvents.START.register(LocalClimbingManager::clientTick);
 		ClientWorldTickEvents.START.register(LocalClimbingManager::tick);
 		ClientPlayConnectionEvents.DISCONNECT.register(LocalClimbingManager::onDisconnect);
 	}

@@ -68,12 +68,11 @@ public class GlobalClimbingManager {
 
 	public static boolean isClimbing(Player player) {
 		ClimbingState state = getState(player);
-		return state != null && state.climbing;
+		return state != null && state.isClimbing();
 	}
 
 	public static void stopClimbing(ServerPlayer player) {
 		changeClimbingState(player, null, null, false);
-//		player.fallDistance = 0;
 	}
 
 	public static ClimbingState getState(Player player) {
@@ -110,6 +109,7 @@ public class GlobalClimbingManager {
 
 	private static void moveNewClimber(ServerPlayer player, Vec3 clickPos, Direction facing) {
 		player.stopRiding();
+		player.fallDistance = 0;
 		Vec3i facingNormal = facing.getNormal();
 		Vec3 offset = new Vec3(facingNormal.getX(), facingNormal.getY(), facingNormal.getZ());
 		double posOffset = START_CLIMB_POS_OFFSET;
@@ -123,7 +123,7 @@ public class GlobalClimbingManager {
 
 	private static void changeClimbingState(ServerPlayer player, @Nullable Vec3 clickPos, @Nullable Direction facing, boolean climbing) {
 		ClimbingState state = getState(player);
-		state.climbing = climbing;
+		state.facing = facing;
 		if (climbing && clickPos != null && facing != null) {
 			addCupEntities(player, state, clickPos, facing);
 		} else {

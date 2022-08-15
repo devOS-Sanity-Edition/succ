@@ -9,23 +9,31 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 
+import net.minecraft.core.Direction;
+
+import net.minecraft.core.Direction.Axis;
+
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 @Environment(EnvType.CLIENT)
 public class LocalClimbingManager {
 	public static final int DEFAULT_ROTATION_RANGE = 90;
 
-	public final Stack<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> unsuckedCups = new Stack<>();
 	public final ClimbingState state;
-	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups = new ArrayList<>();
 	public final float minYaw, maxYaw, minPitch, maxPitch;
+	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups = new ArrayList<>();
+	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> liftedCups = new LinkedList<>();
 
+	private Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> movedCup = null;
 	private int initialCooldown = 10;
 
 	/**
@@ -55,6 +63,13 @@ public class LocalClimbingManager {
 		}
 	}
 
+	// runs every frame
+	public static void clientTick(Minecraft mc) {
+		if (INSTANCE != null) {
+			INSTANCE.frameTick(mc);
+		}
+	}
+
 	public static void onDisconnect(ClientPacketListener handler, Minecraft client) {
 		INSTANCE = null;
 		GlobalClimbingManager.get(true).reset();
@@ -64,19 +79,23 @@ public class LocalClimbingManager {
 		initialCooldown--;
 		handleSuctionStateChanges();
 		moveSelectedCup(mc.options);
-		makePlayerStickToWall(mc.player);
+	}
+
+	private void frameTick(Minecraft mc) {
+		LocalPlayer player = mc.player;
+		if (player != null) {
+			handlePlayerMovement(player);
+		}
 	}
 
 	private void moveSelectedCup(Options options) {
-		if (unsuckedCups.empty()) {
-			return;
-		}
-		Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup = unsuckedCups.peek();
-		ClimbingSuctionCupEntity entity = cup.getRight();
-		SuctionCupMoveDirection direction = SuctionCupMoveDirection.findFromInputs(options);
-		SuctionCupMoveDirection currentDirection = entity.getMoveDirection();
-		if (currentDirection != direction) {
-			entity.setMoveDirectionFromClient(direction);
+		if (movedCup != null) {
+			ClimbingSuctionCupEntity entity = movedCup.getRight();
+			SuctionCupMoveDirection direction = SuctionCupMoveDirection.findFromInputs(options);
+			SuctionCupMoveDirection currentDirection = entity.getMoveDirection();
+			if (currentDirection != direction) {
+				entity.setMoveDirectionFromClient(direction);
+			}
 		}
 	}
 
@@ -95,10 +114,12 @@ public class LocalClimbingManager {
 			if (key.consumeClick()) {
 				boolean suction = entity.getSuction();
 				if (suction) { // was on the wall, now will not be
-					unsuckedCups.push(triple);
+					movedCup = triple;
+					liftedCups.add(triple);
 					entity.setSuctionFromClient(false);
 				} else { // placed onto the wall
-					unsuckedCups.pop();
+					liftedCups.remove(triple);
+					movedCup = liftedCups.isEmpty() ? null : liftedCups.get(liftedCups.size() - 1);
 					entity.setSuctionFromClient(true);
 				}
 			}
@@ -106,7 +127,37 @@ public class LocalClimbingManager {
 		});
 	}
 
-	private void makePlayerStickToWall(LocalPlayer player) {
+	private void handlePlayerMovement(LocalPlayer player) {
 		player.setDeltaMovement(0, 0, 0);
+
+		Direction facing = state.facing;
+		if (facing == null)
+			return;
+		Vec3 oldPos = player.position();
+		Axis ignored = facing.getAxis();
+		double totalX = 0;
+		double totalY = 0;
+		double totalZ = 0;
+		for (Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> triple : cups) {
+			ClimbingSuctionCupEntity cup = triple.getRight();
+			Vec3 toUse = cup.isBeingPlaced() ? cup.position() : cup.getStuckPos();
+			totalX += toUse.x;
+			totalY += toUse.y;
+			totalZ += toUse.z;
+		}
+		double averageX = totalX / 4;
+		double averageY = totalY / 4;
+		double averageZ = totalZ / 4;
+		switch (ignored) {
+			case X -> averageX = oldPos.x;
+			case Y -> averageY = oldPos.y;
+			case Z -> averageZ = oldPos.z;
+		}
+		// move down a bit to align with the cups
+		averageY -= 0.5;
+		double finalX = Mth.lerp(0.2, oldPos.x, averageX);
+		double finalY = Mth.lerp(0.2, oldPos.y, averageY);
+		double finalZ = Mth.lerp(0.2, oldPos.z, averageZ);
+		player.setPosRaw(finalX, finalY, finalZ);
 	}
 }

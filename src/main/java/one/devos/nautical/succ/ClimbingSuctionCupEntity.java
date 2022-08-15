@@ -69,6 +69,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 	private Vec3 unstuckPos;
 	private int ageAtMoveStart = -1;
 	private Vec3 movementTarget = null;
+	private boolean beingPlaced = false;
 
 	/**
 	 * @deprecated ONLY FOR CLIENT SYNC
@@ -101,6 +102,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 			double deltaZ = Mth.lerp(delta, pos.z, movementTarget.z);
 			setPos(deltaX, deltaY, deltaZ);
 			if (isClose(deltaX, deltaY, deltaZ, movementTarget)) {
+				beingPlaced = false;
 				movementTarget = null;
 				ageAtMoveStart = -1;
 			}
@@ -135,6 +137,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 			Vec3 offset = OFFSETS.get(facing);
 			stuckPos = unstuckPos.subtract(offset);
 			setMoveTarget(stuckPos);
+			beingPlaced = true;
 			if (!level.isClientSide()) {
 				moveDirection = SuctionCupMoveDirection.NONE;
 				int data = moveDirection.ordinal();
@@ -156,7 +159,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		if (ordinal == oldDirection.ordinal())
 			return;
 		SuctionCupMoveDirection[] directions = SuctionCupMoveDirection.values();
-		if (ordinal < 0 || ordinal >= directions.length) {
+		if (ordinal >= directions.length) {
 			Succ.LOGGER.warn("Invalid movement direction ordinal received: [{}], [{}], [{}]",
 					ordinal, limb, getOwner().getGameProfile().getName());
 			return;
@@ -173,6 +176,14 @@ public class ClimbingSuctionCupEntity extends Entity {
 
 	public boolean isMoving() {
 		return movementTarget != null && ageAtMoveStart != -1;
+	}
+
+	public boolean isBeingPlaced() {
+		return beingPlaced;
+	}
+
+	public Vec3 getStuckPos() {
+		return stuckPos;
 	}
 
 	public boolean getSuction() {
@@ -263,7 +274,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 	private static void executeOnServerWithCup(MinecraftServer server, ServerPlayer player, SuctionCupLimb limb, BiConsumer<ClimbingState, ClimbingSuctionCupEntity> consumer) {
 		server.execute(() -> {
 			ClimbingState state = GlobalClimbingManager.getState(player);
-			if (!state.climbing) {
+			if (!state.isClimbing()) {
 				Succ.LOGGER.warn("Suction cup update from non-climbing player: [{}], [{}]", limb, player.getGameProfile().getName());
 				return;
 			}
