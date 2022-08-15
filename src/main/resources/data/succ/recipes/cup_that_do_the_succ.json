@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "succ:suction_cup"
+  },
+  "pattern": [
+    "sn ",
+    "sln",
+    "sn "
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:slime_ball"
+    },
+    "n": {
+      "item": "minecraft:iron_nugget"
+    },
+    "l": {
+      "item": "minecraft:leather"
+    }
+  }
+}
