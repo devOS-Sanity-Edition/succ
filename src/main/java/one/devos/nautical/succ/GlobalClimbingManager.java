@@ -137,12 +137,12 @@ public class GlobalClimbingManager {
 		if (level == null) {
 			return;
 		}
-		SuctionCupLimb.INITIAL_POS_OFFSETS.forEach((limb, offset) -> {
-			Vec3 cupPos = clickPos.add(offset);
+		for (SuctionCupLimb limb : SuctionCupLimb.values()) {
+			Vec3 cupPos = clickPos.add(limb.offset);
 			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, cupPos, state, facing);
 			level.addFreshEntity(entity);
 			state.entities.put(limb, entity);
-		});
+		}
 	}
 
 	private static void removeCupEntities(ServerPlayer player, ClimbingState state) {
@@ -161,7 +161,9 @@ public class GlobalClimbingManager {
 	}
 
 	public static void onPlayerLeave(ServerGamePacketListenerImpl handler, MinecraftServer server) {
-		UUID id = handler.player.getUUID();
+		ServerPlayer player = handler.player;
+		stopClimbing(player);
+		UUID id = player.getUUID();
 		putState(id, null, false);
 		FriendlyByteBuf buf = PacketByteBufs.create();
 		buf.writeEnum(StateChangeType.REMOVE);

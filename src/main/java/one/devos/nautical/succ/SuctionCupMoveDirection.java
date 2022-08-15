@@ -5,13 +5,17 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Options;
+import net.minecraft.world.phys.Vec3;
 
 public enum SuctionCupMoveDirection {
 	UP_LEFT(-1, 1), UP(0, 1), UP_RIGHT(1, 1),
 	LEFT(-1, 0), NONE(0, 0), RIGHT(1, 0),
 	DOWN_LEFT(-1, -1), DOWN(0, -1), DOWN_RIGHT(1, -1);
 
+	public static final double OFFSET_PER_UNIT = 0.3;
+
 	public final int xOff, yOff;
+	public final Vec3 offset;
 
 	/**
 	 * Map of X values to maps of Y values to directions
@@ -21,12 +25,13 @@ public enum SuctionCupMoveDirection {
 	SuctionCupMoveDirection(int xOff, int yOff) {
 		this.xOff = xOff;
 		this.yOff = yOff;
+		this.offset = new Vec3(xOff * OFFSET_PER_UNIT, yOff * OFFSET_PER_UNIT, 0);
 	}
 
 	private static void fillMap() {
 		map = new Int2ObjectOpenHashMap<>();
 		for (SuctionCupMoveDirection moveDirection : values()) {
-			map.computeIfAbsent(moveDirection.xOff, new Int2ObjectOpenHashMap<>()).put(moveDirection.yOff, moveDirection);
+			map.computeIfAbsent(moveDirection.xOff, (i) -> new Int2ObjectOpenHashMap<>(3)).put(moveDirection.yOff, moveDirection);
 		}
 	}
 

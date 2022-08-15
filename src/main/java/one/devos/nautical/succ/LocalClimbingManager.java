@@ -25,6 +25,7 @@ public class LocalClimbingManager {
 	public final ClimbingState state;
 	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups = new ArrayList<>();
 	public final float minYaw, maxYaw, minPitch, maxPitch;
+
 	private int initialCooldown = 10;
 
 	/**
@@ -62,25 +63,29 @@ public class LocalClimbingManager {
 	private void tickClimbing(Minecraft mc, ClientLevel level) {
 		initialCooldown--;
 		handleSuctionStateChanges();
-		moveCups(mc.options);
+		moveSelectedCup(mc.options);
 		makePlayerStickToWall(mc.player);
 	}
 
-	private void moveCups(Options options) {
+	private void moveSelectedCup(Options options) {
 		if (unsuckedCups.empty()) {
 			return;
 		}
-//		Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup = unsuckedCups.peek();
-//		ClimbingSuctionCupEntity state = limbToEntity.get(moving);
-//		SuctionCupMoveDirection lastMoveDirection = state.moveDirection;
-//		state.moveDirection = SuctionCupMoveDirection.findFromInputs(options);
+		Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup = unsuckedCups.peek();
+		ClimbingSuctionCupEntity entity = cup.getRight();
+		SuctionCupMoveDirection direction = SuctionCupMoveDirection.findFromInputs(options);
+		SuctionCupMoveDirection currentDirection = entity.getMoveDirection();
+		if (currentDirection != direction) {
+			entity.setMoveDirectionFromClient(direction);
+		}
 	}
 
 	private void handleSuctionStateChanges() {
 		// give a short cooldown after starting to climb
 		if (initialCooldown > 0) {
 			cups.forEach(triple -> {
-				while (triple.getLeft().consumeClick()); // discard any clicks that happen here
+				KeyMapping key = triple.getLeft();
+				while (key.consumeClick()); // discard any clicks that happen here
 			});
 			return;
 		}

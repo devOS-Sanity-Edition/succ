@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import com.mojang.math.Vector3f;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
@@ -34,8 +35,9 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 		matrices.mulPose(Vector3f.XN.rotationDegrees(90));
 		matrices.translate(0, -1.23, 0.35);
 
-		VertexConsumer consumer = vertexConsumers.getBuffer(cupModel.renderType(SuctionCupModel.TEXTURE));
-		this.cupModel.renderToBuffer(matrices, consumer, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+		Model model = entity.getSuction() && !entity.isMoving() ? depressedModel : cupModel;
+		VertexConsumer consumer = vertexConsumers.getBuffer(model.renderType(SuctionCupModel.TEXTURE));
+		model.renderToBuffer(matrices, consumer, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
 
 		matrices.popPose();
 		super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
