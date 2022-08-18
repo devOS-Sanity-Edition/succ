@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "succ:suction_cup"
+    },
+    "title": {
+      "translate": "advancements.succ.twister_champion.title"
+    },
+    "description": {
+      "translate": "advancements.succ.twister_champion.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "calcium": {
+      "trigger": "succ:twister_champion"
+    }
+  }
+}

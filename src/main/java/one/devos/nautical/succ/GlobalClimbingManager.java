@@ -138,7 +138,12 @@ public class GlobalClimbingManager {
 			return;
 		}
 		for (SuctionCupLimb limb : SuctionCupLimb.values()) {
-			Vec3 cupPos = clickPos.add(limb.offset);
+			Vec3 cupPos = clickPos.add(SuccUtils.rotateVec(limb.cupOffset, facing.toYRot()));
+			// why is this needed???
+			if (facing.getAxisDirection() == AxisDirection.POSITIVE) {
+				Vec3i offset = facing.getOpposite().getNormal();
+				cupPos = cupPos.add(offset.getX(), offset.getY(), offset.getZ());
+			}
 			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, cupPos, state, facing);
 			level.addFreshEntity(entity);
 			state.entities.put(limb, entity);

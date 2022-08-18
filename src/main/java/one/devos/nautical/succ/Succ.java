@@ -1,6 +1,7 @@
 package one.devos.nautical.succ;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 public class Succ implements ModInitializer {
 	public static final String ID = "succ";
 	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
+
+	public static TwisterChampionTrigger TWISTER_CHAMPION = CriteriaTriggers.register(new TwisterChampionTrigger());
 
 	public static Item SUCTION_CUP = new SuctionCupItem(new QuiltItemSettings().equipmentSlot(EquipmentSlot.HEAD));
 	public static Item SUCTION_CUP_BOOTS = new Item(new QuiltItemSettings().equipmentSlot(EquipmentSlot.FEET));

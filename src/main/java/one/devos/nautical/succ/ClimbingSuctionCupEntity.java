@@ -6,6 +6,8 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.core.Direction.Plane;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -19,9 +21,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -34,6 +39,7 @@ import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -67,9 +73,13 @@ public class ClimbingSuctionCupEntity extends Entity {
 	private SuctionCupMoveDirection moveDirection = SuctionCupMoveDirection.NONE;
 	private Vec3 stuckPos;
 	private Vec3 unstuckPos;
+	private Vec3 handlePos;
+	private Vec3 lastHandlePos;
 	private int ageAtMoveStart = -1;
 	private Vec3 movementTarget = null;
 	private boolean beingPlaced = false;
+
+	private Player owner = null;
 
 	/**
 	 * @deprecated ONLY FOR CLIENT SYNC
@@ -84,11 +94,19 @@ public class ClimbingSuctionCupEntity extends Entity {
 		this.limb = limb;
 		this.climbingState = state;
 		this.facing = facing;
+		setYRot(facing.toYRot());
 		this.stuckPos = wallPos;
 		Vec3 offset = OFFSETS.get(facing);
 		this.unstuckPos = stuckPos.add(offset);
 		setPos(unstuckPos);
 		setMoveTarget(stuckPos);
+	}
+
+	@Override
+	public void setPos(double x, double y, double z) {
+		super.setPos(x, y, z);
+		lastHandlePos = handlePos;
+		handlePos = new Vec3(x, y + 0.25, z);
 	}
 
 	@Override
@@ -101,11 +119,15 @@ public class ClimbingSuctionCupEntity extends Entity {
 			double deltaY = Mth.lerp(delta, pos.y, movementTarget.y);
 			double deltaZ = Mth.lerp(delta, pos.z, movementTarget.z);
 			setPos(deltaX, deltaY, deltaZ);
-			if (isClose(deltaX, deltaY, deltaZ, movementTarget)) {
+			if (SuccUtils.isClose(deltaX, deltaY, deltaZ, movementTarget)) {
 				beingPlaced = false;
 				movementTarget = null;
 				ageAtMoveStart = -1;
+				checkTwisterChampionStatus();
 			}
+		}
+		if (owner != null && owner.isRemoved()) {
+			owner = null;
 		}
 	}
 
@@ -130,6 +152,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		this.suction = entityData.get(SUCTION);
 		if (oldSuction == suction)
 			return;
+		level.playSound(null, blockPosition(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.PLAYERS, 1, suction ? 0.5f : 1);
 		if (moveDirection == SuctionCupMoveDirection.NONE) {
 			setMoveTarget(suction ? stuckPos : unstuckPos);
 		} else { // placing at a new pos
@@ -168,10 +191,13 @@ public class ClimbingSuctionCupEntity extends Entity {
 		boolean skipPosUpdate = (data & SKIP_MASK) == SKIP_MASK;
 		if (skipPosUpdate)
 			return;
-		// TODO rotate offset
-		Vec3 offset = moveDirection.offset;
-		Vec3 newPos = unstuckPos.add(offset);
+		Vec3 newPos = getOffsetPos(moveDirection);
 		setMoveTarget(newPos);
+	}
+
+	public Vec3 getOffsetPos(SuctionCupMoveDirection direction) {
+		Vec3 offset = SuccUtils.rotateVec(direction.offset, facing.toYRot());
+		return unstuckPos.add(offset);
 	}
 
 	public boolean isMoving() {
@@ -194,12 +220,25 @@ public class ClimbingSuctionCupEntity extends Entity {
 		return moveDirection;
 	}
 
+	public Vec3 getHandlePos() {
+		return handlePos;
+	}
+
+	public Vec3 getHandlePos(float tickDelta) {
+		double x = Mth.lerp(tickDelta, this.lastHandlePos.x, this.handlePos.x);
+		double y = Mth.lerp(tickDelta, this.lastHandlePos.y, this.handlePos.y);
+		double z = Mth.lerp(tickDelta, this.lastHandlePos.z, this.handlePos.z);
+		return new Vec3(x, y, z);
+	}
+
 	@Override
 	protected void readAdditionalSaveData(CompoundTag nbt) {
+		// not saved
 	}
 
 	@Override
 	protected void addAdditionalSaveData(CompoundTag nbt) {
+		// not saved
 	}
 
 	@Override
@@ -214,12 +253,12 @@ public class ClimbingSuctionCupEntity extends Entity {
 		buf.writeEnum(limb);
 		buf.writeUUID(climbingState.playerUuid);
 		buf.writeEnum(facing);
-		writeVec(buf, stuckPos);
-		writeVec(buf, unstuckPos);
+		SuccUtils.writeVec(buf, stuckPos);
+		SuccUtils.writeVec(buf, unstuckPos);
 		boolean moving = isMoving();
 		buf.writeBoolean(moving);
 		if (moving) {
-			writeVec(buf, movementTarget);
+			SuccUtils.writeVec(buf, movementTarget);
 			buf.writeVarInt(ageAtMoveStart);
 		}
 	}
@@ -230,17 +269,69 @@ public class ClimbingSuctionCupEntity extends Entity {
 		this.climbingState = GlobalClimbingManager.getState(playerId, level.isClientSide());
 		this.climbingState.entities.put(limb, this);
 		this.facing = buf.readEnum(Direction.class);
-		this.stuckPos = readVec(buf);
-		this.unstuckPos = readVec(buf);
+		setYRot(facing.toYRot());
+		this.stuckPos = SuccUtils.readVec(buf);
+		this.unstuckPos = SuccUtils.readVec(buf);
 		boolean moving = buf.readBoolean();
 		if (moving) {
-			this.movementTarget = readVec(buf);
+			this.movementTarget = SuccUtils.readVec(buf);
 			this.ageAtMoveStart = buf.readVarInt();
 		}
 	}
 
 	public Player getOwner() {
-		return level.getPlayerByUUID(climbingState.playerUuid);
+		if (owner == null) {
+			owner = level.getPlayerByUUID(climbingState.playerUuid);
+		}
+		return owner;
+	}
+
+	public void checkTwisterChampionStatus() {
+		Player owner = getOwner();
+		if (!(owner instanceof ServerPlayer player)) {
+			return;
+		}
+		int flips = 0;
+		// check every cup against every other
+		for (Entry<SuctionCupLimb, ClimbingSuctionCupEntity> entry : climbingState.entities.entrySet()) {
+			SuctionCupLimb limb = entry.getKey();
+			ClimbingSuctionCupEntity entity = entry.getValue();
+			Direction right = entity.facing.getClockWise();
+			Axis axis = right.getAxis();
+			AxisDirection direction = right.getAxisDirection();
+			Vec3 pos = entity.position();
+			double posOnAxis = SuccUtils.axisChoose(axis, pos);
+
+			for (Entry<SuctionCupLimb, ClimbingSuctionCupEntity> entry2 : climbingState.entities.entrySet()) {
+				SuctionCupLimb otherLimb = entry2.getKey();
+				ClimbingSuctionCupEntity otherEntity = entry2.getValue();
+				Vec3 otherPos = otherEntity.position();
+				double otherPosOnAxis = SuccUtils.axisChoose(axis, otherPos);
+				if (otherLimb.left != limb.left) { // opposite sides
+					if (otherLimb.hand != limb.hand) {
+						// complete opposites
+						continue;
+					}
+					boolean correct = direction == AxisDirection.POSITIVE
+							? limb.left ? posOnAxis <= otherPosOnAxis : posOnAxis >= otherPosOnAxis
+							: limb.left ? posOnAxis >= otherPosOnAxis : posOnAxis <= otherPosOnAxis;
+					if (!correct) {
+						flips++;
+					}
+				} else if (otherLimb.hand != limb.hand) { // same side - check limb
+					boolean shouldBeAbove = limb.hand;
+					boolean correctOrder = shouldBeAbove
+							? otherPos.y <= pos.y
+							: otherPos.y >= pos.y;
+					if (!correctOrder) {
+						flips++;
+					}
+				} // else - both match, found itself, do nothing
+			}
+		}
+		if (flips > 4) {
+			Succ.TWISTER_CHAMPION.trigger(player);
+		}
 	}
 
 	public static void networkingInit() {
@@ -315,27 +406,5 @@ public class ClimbingSuctionCupEntity extends Entity {
 		buf.writeEnum(direction);
 		buf.writeEnum(limb);
 		ClientPlayNetworking.send(UPDATE_DIRECTION, buf);
-	}
-
-	public static boolean isClose(double x, double y, double z, Vec3 target) {
-		return isClose(x, target.x) && isClose(y, target.y) && isClose(z, target.z);
-	}
-
-	public static boolean isClose(double a, double b) {
-		if (a > b) {
-			return a - b < 0.01;
-		} else {
-			return b - a < 0.01;
-		}
-	}
-
-	public static void writeVec(FriendlyByteBuf buf, Vec3 vec) {
-		buf.writeDouble(vec.x);
-		buf.writeDouble(vec.y);
-		buf.writeDouble(vec.z);
-	}
-
-	public static Vec3 readVec(FriendlyByteBuf buf) {
-		return new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble());
 	}
 }

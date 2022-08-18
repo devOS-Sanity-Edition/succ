@@ -9,8 +9,18 @@
   "key.succ.rightFoot": "Right Foot Suction Cup",
   "key.succ.stopClimbing": "Stop Climbing",
 
-  "succ.tooFar": "This wall is too far away to climb.",
+  "succ.wallTooFar": "This wall is too far away to climb.",
   "succ.missingCups": "You need suction cups on all 4 limbs to climb.",
   "succ.obstructed": "Climbing here will place you inside a block.",
-  "succ.onlyWalls": "You can only climb on walls."
+  "succ.onlyWalls": "You can only climb on walls.",
+
+  "succ.tooFar": "You can't reach that far.",
+  "succ.cupObstructedBlock": "A block is in the way.",
+  "succ.cupObstructedOther": "Another Suction Cup is in the way.",
+  "succ.cupObstructedNoWall": "There's nowhere for a Suction Cup to stick there.",
+
+  "succ.stopClimbing": "Stop climbing in %s...",
+
+  "advancements.succ.twister_champion.title": "Twister Champion",
+  "advancements.succ.twister_champion.description": "Ouch oof owie my bones"
 }

@@ -12,7 +12,9 @@
     "KeyboardInputMixin",
     "KeyMappingAccessor",
     "KeyMappingMixin",
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "PlayerItemInHandLayerMixin",
+    "PlayerRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -16,12 +16,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class SuctionCupItem extends Item {
 	public static final EquipmentSlot[] CUP_SLOTS = { EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.FEET };
 	public static final TagKey<Item> CLIMBING_CUPS = TagKey.create(Registry.ITEM_REGISTRY, Succ.id("climbing_cups"));
-	public static final Component TOO_FAR = Component.translatable("succ.tooFar");
+	public static final Component TOO_FAR = Component.translatable("succ.wallTooFar");
 	public static final Component MISSING_CUPS = Component.translatable("succ.missingCups");
 	public static final Component OBSTRUCTED = Component.translatable("succ.obstructed");
 	public static final Component ONLY_WALLS = Component.translatable("succ.onlyWalls");
@@ -87,7 +88,8 @@ public class SuctionCupItem extends Item {
 
 	public static boolean climbPosObstructed(Player player, Level level, Vec3 clickPos, BlockPos clickedBlock, Direction clickedFace) {
 		BlockPos topToCheck = clickedBlock.relative(clickedFace);
-		float height = player.getEyeHeight();
+		AABB bounds = player.getBoundingBox();
+		double height = bounds.maxY - bounds.minY;
 		BlockPos bottomToCheck = new BlockPos(topToCheck.getX(), clickPos.y - height, topToCheck.getZ());
 		for (BlockPos pos : BlockPos.betweenClosed(topToCheck, bottomToCheck)) {
 			if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {

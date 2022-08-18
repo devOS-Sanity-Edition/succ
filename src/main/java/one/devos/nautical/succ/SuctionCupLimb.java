@@ -8,12 +8,23 @@ public enum SuctionCupLimb {
 	LEFT_FOOT(true, false),
 	RIGHT_FOOT(false, false);
 
-	public final Vec3 offset;
+	public final Vec3 cupOffset; // the offset from the player of cup start positions
+	public final Vec3 offsetFromPlayer; // the offset from the player to where it connects to the torso
+	public final boolean left;
+	public final boolean hand;
 
 	SuctionCupLimb(boolean left, boolean hand) {
+		this.left = left;
+		this.hand = hand;
+
 		double x = left ? -0.5 : 0.5;
 		double y = hand ? -0.7 : -1.7;
 		double z = -0.28;
-		this.offset = new Vec3(x, y, z);
+		this.cupOffset = new Vec3(x, y, z);
+
+		x = left ? -0.3 : 0.3;
+		y = hand ? 1.35 : 0.75;
+		z = 0;
+		offsetFromPlayer = new Vec3(x, y, z);
 	}
 }

@@ -9,7 +9,7 @@
   "key.succ.rightFoot": "Right foot suction cuppeth",
   "key.succ.stopClimbing": "Stand ho climbing",
 
-  "succ.tooFar": "This mure is too far hence to climb.",
+  "succ.wallTooFar": "This mure is too far hence to climb.",
   "succ.missingCups": "Thee needeth suction cups on all 4 limbs to climb.",
   "succ.obstructed": "Climbing h're shall lodging thee inside a block.",
   "succ.onlyWalls": "Thee can only climb on walls."
