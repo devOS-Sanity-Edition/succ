@@ -119,7 +119,7 @@ public class GlobalClimbingManager {
 		Vec3 offset = new Vec3(facingNormal.getX(), facingNormal.getY(), facingNormal.getZ());
 		double posOffset = START_CLIMB_POS_OFFSET;
 		if (facing.getAxisDirection() == AxisDirection.POSITIVE) {
-			posOffset *= 3.7; // weird magic number to make positioning match, I don't understand why it's different
+			posOffset *= 4.3; // weird magic number to make positioning match, I don't understand why it's different
 		}
 		offset = offset.scale(posOffset);
 		Vec3 climberPos = clickPos.subtract(offset);
