@@ -156,7 +156,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		if (moveDirection == SuctionCupMoveDirection.NONE) {
 			setMoveTarget(suction ? stuckPos : unstuckPos);
 		} else { // placing at a new pos
-			unstuckPos = unstuckPos.add(moveDirection.offset);
+			unstuckPos = unstuckPos.add(SuccUtils.rotateVec(moveDirection.offset, facing.toYRot()));
 			Vec3 offset = OFFSETS.get(facing);
 			stuckPos = unstuckPos.subtract(offset);
 			setMoveTarget(stuckPos);
@@ -331,6 +331,16 @@ public class ClimbingSuctionCupEntity extends Entity {
 		}
 		if (flips > 4) {
 			Succ.TWISTER_CHAMPION.trigger(player);
+		}
+	}
+
+	@Override
+	public void remove(RemovalReason reason) {
+		super.remove(reason);
+		if (!level.isClientSide()) {
+			if (getOwner() instanceof ServerPlayer player && GlobalClimbingManager.isClimbing(player)) {
+				GlobalClimbingManager.stopClimbing(player);
+			}
 		}
 	}
 

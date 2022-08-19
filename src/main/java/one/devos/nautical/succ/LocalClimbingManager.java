@@ -2,6 +2,7 @@ package one.devos.nautical.succ;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -14,16 +15,20 @@ import net.minecraft.core.Direction;
 
 import net.minecraft.core.Direction.Axis;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import org.apache.commons.lang3.tuple.Triple;
+import org.quiltmc.qsl.networking.api.PacketByteBufs;
+import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 import javax.annotation.Nullable;
 
@@ -34,9 +39,13 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public class LocalClimbingManager {
 	public static final Component TOO_FAR = Component.translatable("succ.tooFar");
-	public static final Component INFLEXIBLE = Component.translatable("succ.cupObstructedBlock");
 	public static final Component CUP_OBSTRUCTED_BLOCK = Component.translatable("succ.cupObstructedBlock");
 	public static final Component CUP_OBSTRUCTED_OTHER = Component.translatable("succ.cupObstructedOther");
+	public static final Component CUP_OBSTRUCTED_BAD_WALL = Component.translatable("succ.cupObstructedBadWall"); // TODO
+	public static final Component CUP_OBSTRUCTED_LIQUID = Component.translatable("succ.cupObstructedLiquid");
+	public static final Component STOP_3 = Component.translatable("succ.stopClimbing", 3).withStyle(ChatFormatting.GOLD);
+	public static final Component STOP_2 = Component.translatable("succ.stopClimbing", 2).withStyle(ChatFormatting.GOLD);
+	public static final Component STOP_1 = Component.translatable("succ.stopClimbing", 1).withStyle(ChatFormatting.GOLD);
 	public static final int DEFAULT_ROTATION_RANGE = 90;
 
 	public final ClimbingState state;
@@ -46,7 +55,9 @@ public class LocalClimbingManager {
 
 	private Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> movedCup = null;
 	private int initialCooldown = 10;
+	private int ticksTillStop = 0;
 	private SuctionCupMoveDirection lastInputDirection = null;
+	private Component lastSentMessage = null;
 
 	/**
 	 * Non-null when climbing
@@ -89,6 +100,7 @@ public class LocalClimbingManager {
 
 	private void tickClimbing(Minecraft mc, ClientLevel level) {
 		initialCooldown--;
+		ticksTillStop--;
 		handleSuctionStateChanges();
 		moveSelectedCup(mc.player, mc.level, mc.options);
 	}
@@ -109,10 +121,48 @@ public class LocalClimbingManager {
 				Vec3 newPos = entity.getOffsetPos(direction);
 				if (newCupPosCloseEnough(player, level, entity, newPos, direction)
 						&& newCupPosNotObstructed(player, level, entity, newPos, direction)) {
-					entity.setMoveDirectionFromClient(direction);
+					if (!tryStopClimbing(player, level, entity, newPos, direction)) {
+						ticksTillStop = -1;
+						entity.setMoveDirectionFromClient(direction);
+					}
+
 				}
 			}
+			if (direction == SuctionCupMoveDirection.NONE) {
+				ticksTillStop = -1;
+			}
 			lastInputDirection = direction;
+		}
+	}
+
+	// true if trying to stop
+	private boolean tryStopClimbing(LocalPlayer player, ClientLevel level, ClimbingSuctionCupEntity entity, Vec3 newPos, SuctionCupMoveDirection direction) {
+		BlockPos blockPos = new BlockPos(newPos);
+		Direction facing = entity.facing;
+		BlockPos wallPos = blockPos.relative(facing);
+		BlockState wallState = level.getBlockState(wallPos);
+		if (wallState.getCollisionShape(level, wallPos).isEmpty()) {
+			if (ticksTillStop == 10) {
+				FriendlyByteBuf buf = PacketByteBufs.create();
+				buf.writeBlockPos(wallPos);
+				buf.writeEnum(facing);
+				ClientPlayNetworking.send(GlobalClimbingManager.REQUEST_STOP, buf);
+			} else if (ticksTillStop < 0) {
+				ticksTillStop = 80;
+			}
+			sendNotification(player, level, direction, getTimerComponent());
+			return true;
+		}
+		return false;
+	}
+
+	private Component getTimerComponent() {
+		if (ticksTillStop > 60) {
+			return STOP_3;
+		} else if (ticksTillStop > 40) {
+			return STOP_2;
+		} else {
+			return STOP_1;
 		}
 	}
 
@@ -126,7 +176,7 @@ public class LocalClimbingManager {
 			}
 		}
 		if (largestDistance >= 2) { // too far
-			failMove(player, level, direction, TOO_FAR);
+			sendNotification(player, level, direction, TOO_FAR);
 			return false;
 		}
 		return true;
@@ -134,14 +184,16 @@ public class LocalClimbingManager {
 
 	private boolean newCupPosNotObstructed(LocalPlayer player, ClientLevel level, ClimbingSuctionCupEntity entity,
 										   Vec3 newPos, SuctionCupMoveDirection direction) {
-		BlockPos lowCorner = new BlockPos(newPos);
-		BlockPos highCorner = new BlockPos(Math.ceil(newPos.x), Math.ceil(newPos.y), Math.ceil(newPos.z));
-		for (BlockPos pos : BlockPos.betweenClosed(lowCorner, highCorner)) {
-			BlockState state = level.getBlockState(pos);
-			if (!state.getCollisionShape(level, pos).isEmpty()) {
-				failMove(player, level, direction, CUP_OBSTRUCTED_BLOCK);
-				return false;
-			}
+		BlockPos newBlockPos = new BlockPos(newPos);
+		BlockState state = level.getBlockState(newBlockPos);
+		if (!state.getCollisionShape(level, newBlockPos).isEmpty()) {
+			sendNotification(player, level, direction, CUP_OBSTRUCTED_BLOCK);
+			return false;
+		}
+		FluidState fluid = state.getFluidState();
+		if (!fluid.isEmpty()) {
+			sendNotification(player, level, direction, CUP_OBSTRUCTED_LIQUID);
+			return false;
 		}
 		for (Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup : cups) {
 			ClimbingSuctionCupEntity otherEntity = cup.getRight();
@@ -149,7 +201,7 @@ public class LocalClimbingManager {
 				AABB otherBounds = otherEntity.getBoundingBox();
 				AABB newBounds = entity.getDimensions(Pose.STANDING).makeBoundingBox(newPos);
 				if (otherBounds.intersects(newBounds)) {
-					failMove(player, level, direction, CUP_OBSTRUCTED_OTHER);
+					sendNotification(player, level, direction, CUP_OBSTRUCTED_OTHER);
 					return false;
 				}
 			}
@@ -157,9 +209,11 @@ public class LocalClimbingManager {
 		return true;
 	}
 
-	private void failMove(LocalPlayer player, ClientLevel level, SuctionCupMoveDirection direction, Component message) {
-		if (direction != lastInputDirection) { // if it hasn't changed, don't spam it
+	private void sendNotification(LocalPlayer player, ClientLevel level, SuctionCupMoveDirection direction, Component message) {
+		// if it hasn't changed, don't spam it    // new message, send it
+		if (direction != lastInputDirection || lastSentMessage != message) {
 			player.displayClientMessage(message, true);
+			lastSentMessage = message;
 			level.playLocalSound(player.blockPosition(), SoundEvents.STONE_BUTTON_CLICK_ON,
 					SoundSource.PLAYERS, 1, 1, false);
 		}

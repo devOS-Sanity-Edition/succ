@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -88,7 +89,7 @@ public class SuctionCupItem extends Item {
 
 	public static boolean climbPosObstructed(Player player, Level level, Vec3 clickPos, BlockPos clickedBlock, Direction clickedFace) {
 		BlockPos topToCheck = clickedBlock.relative(clickedFace);
-		AABB bounds = player.getBoundingBox();
+		AABB bounds = player.getDimensions(Pose.STANDING).makeBoundingBox(player.position());
 		double height = bounds.maxY - bounds.minY;
 		BlockPos bottomToCheck = new BlockPos(topToCheck.getX(), clickPos.y - height, topToCheck.getZ());
 		for (BlockPos pos : BlockPos.betweenClosed(topToCheck, bottomToCheck)) {

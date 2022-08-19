@@ -45,6 +45,7 @@ public class Succ implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register(GlobalClimbingManager::onPlayerJoin);
 		ServerPlayConnectionEvents.DISCONNECT.register(GlobalClimbingManager::onPlayerLeave);
 		ClimbingSuctionCupEntity.networkingInit();
+		GlobalClimbingManager.networkingInit();
 	}
 
 	public static ResourceLocation id(String path) {

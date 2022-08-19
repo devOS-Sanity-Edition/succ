@@ -17,14 +17,14 @@ public enum SuctionCupLimb {
 		this.left = left;
 		this.hand = hand;
 
-		double x = left ? -0.5 : 0.5;
+		double x = left ? 0.4 : -0.4;
 		double y = hand ? -0.7 : -1.7;
-		double z = -0.28;
+		double z = 0.35;
 		this.cupOffset = new Vec3(x, y, z);
 
-		x = left ? -0.3 : 0.3;
+		x = left ? 0.3 : -0.3;
 		y = hand ? 1.35 : 0.75;
-		z = 0;
+		z = 0.08;
 		offsetFromPlayer = new Vec3(x, y, z);
 	}
 }

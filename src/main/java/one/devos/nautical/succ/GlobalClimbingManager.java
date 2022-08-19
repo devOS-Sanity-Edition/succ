@@ -4,14 +4,18 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 
 import net.minecraft.world.level.Level;
@@ -34,6 +38,7 @@ import java.util.UUID;
  */
 public class GlobalClimbingManager {
 	public static final ResourceLocation STATE_CHANGE_PACKET = Succ.id("state_change");
+	public static final ResourceLocation REQUEST_STOP = Succ.id("request_stop");
 	public static final double START_CLIMB_POS_OFFSET = 0.30;
 
 	// we need a different manager on each side to prevent leaking state in singleplayer and lan
@@ -176,8 +181,36 @@ public class GlobalClimbingManager {
 		ServerPlayNetworking.send(PlayerLookup.all(server), STATE_CHANGE_PACKET,  buf);
 	}
 
+	public static void stopRequested(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler,
+									 FriendlyByteBuf buf, PacketSender responseSender) {
+		BlockPos stopPos = buf.readBlockPos();
+		Direction facing = buf.readEnum(Direction.class);
+		server.execute(() -> {
+			BlockPos playerPos = player.blockPosition();
+			if (playerPos.distSqr(stopPos) > 9) {
+				Succ.LOGGER.warn("Player {} tried to stop climbing too far from their current position: [{}] to [{}]",
+						player.getGameProfile().getName(), playerPos, stopPos);
+				return;
+			}
+			if (!(player.level instanceof ServerLevel level)) {
+				return;
+			}
+			stopClimbing(player);
+			BlockPos above = stopPos.above();
+			boolean cramped = !level.getBlockState(above).getCollisionShape(level, above).isEmpty();
+			if (cramped) {
+				player.setPose(Pose.SWIMMING);
+			}
+			player.teleportTo(level, stopPos.getX() + 0.5, stopPos.getY(), stopPos.getZ() + 0.5, facing.toYRot(), 0);
+		});
+	}
+
+	public static void networkingInit() {
+		ServerPlayNetworking.registerGlobalReceiver(REQUEST_STOP, GlobalClimbingManager::stopRequested);
+	}
+
 	@Environment(EnvType.CLIENT)
-	public static void clientInit() {
+	public static void clientNetworkingInit() {
 		ClientPlayNetworking.registerGlobalReceiver(STATE_CHANGE_PACKET, GlobalClimbingManager::handleChangeReceived);
 	}
 

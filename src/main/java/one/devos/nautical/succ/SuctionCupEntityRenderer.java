@@ -12,22 +12,23 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
 import one.devos.nautical.succ.model.DepressedSuctionCupModel;
 import one.devos.nautical.succ.model.SuctionCupModel;
 
 public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupEntity> {
+	public static final float LIMB_LENGTH = 13; // found through trial and error, the length of a limb in ModelPart space
+
 	private final Minecraft mc;
 	private final SuctionCupModel cupModel;
 	private final DepressedSuctionCupModel depressedModel;
@@ -98,8 +99,14 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 			case RIGHT_FOOT -> PlayerModelPart.RIGHT_PANTS_LEG;
 		};
 		overlay.visible = owner.isModelPartShown(part);
+
+		float limbXOld = limbPart.x;
+		float limbYOld = limbPart.y;
+		float limbZOld = limbPart.z;
+
 		Vec3 playerPos = owner.getPosition(tickDelta);
-		Vec3 limbConnection = playerPos.add(SuccUtils.rotateVec(limb.offsetFromPlayer, entity.facing.toYRot()));
+		Direction facing = entity.facing;
+		Vec3 limbConnection = playerPos.add(SuccUtils.rotateVec(limb.offsetFromPlayer, facing.toYRot()));
 		Vec3 handlePos = entity.getHandlePos(tickDelta);
 		boolean depressed = entity.getSuction() && !entity.isMoving();
 
@@ -107,19 +114,21 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 		double dY = limbConnection.y - handlePos.y;
 		double dZ = limbConnection.z - handlePos.z;
 
-		float yaw = (float) -Math.atan2(dX, dZ);
+		float yaw = (float) -Math.atan2(dX, dZ) + (Mth.DEG_TO_RAD * facing.getOpposite().toYRot());
 		float pitch = (float) Math.atan2(dY, dZ) - Mth.HALF_PI;
 		limbPart.setRotation(pitch, yaw, Mth.PI);
 
-		float limbXOld = limbPart.x;
-		float limbYOld = limbPart.y;
-		float limbZOld = limbPart.z;
-		limbPart.x = Mth.sin(yaw) * -10;
-		limbPart.y = Mth.cos(pitch) * 11 + 3;
-		limbPart.z = Mth.cos(yaw) * 11;
-		if (depressed) {
-			limbPart.z -= 2.5;
+		float distance = Mth.sqrt((float) (dX * dX + dY * dY + dZ * dZ));
+
+		float x = (Mth.sin(yaw) * LIMB_LENGTH);
+		float y = (Mth.cos(pitch) * LIMB_LENGTH) + 3;
+		float z = (Mth.cos(yaw) * distance) - 10;
+		if (!depressed) {
+			z -= 2.5;
 		}
+
+		Vector3f limbPos = SuccUtils.rotateVec(new Vector3f(x, y, z), facing.toYRot());
+		limbPart.setPos(limbPos.x(), limbPos.y(), limbPos.z());
 
 		overlay.copyFrom(limbPart);
 

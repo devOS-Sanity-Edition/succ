@@ -25,7 +25,7 @@ public enum SuctionCupMoveDirection {
 	SuctionCupMoveDirection(int xOff, int yOff) {
 		this.xOff = xOff;
 		this.yOff = yOff;
-		this.offset = new Vec3(xOff * OFFSET_PER_UNIT, yOff * OFFSET_PER_UNIT, 0);
+		this.offset = new Vec3(xOff * -OFFSET_PER_UNIT, yOff * OFFSET_PER_UNIT, 0);
 	}
 
 	private static void fillMap() {

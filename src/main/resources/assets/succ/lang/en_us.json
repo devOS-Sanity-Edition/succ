@@ -17,7 +17,8 @@
   "succ.tooFar": "You can't reach that far.",
   "succ.cupObstructedBlock": "A block is in the way.",
   "succ.cupObstructedOther": "Another Suction Cup is in the way.",
-  "succ.cupObstructedNoWall": "There's nowhere for a Suction Cup to stick there.",
+  "succ.cupObstructedBadWall": "A Suction Cup can't stick to this wall.",
+  "succ.cupObstructedLiquid": "Liquid prevents your suction cups from sticking.",
 
   "succ.stopClimbing": "Stop climbing in %s...",
 

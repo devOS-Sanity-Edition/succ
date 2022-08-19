@@ -1,5 +1,7 @@
 package one.devos.nautical.succ;
 
+import com.mojang.math.Vector3f;
+
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
@@ -11,9 +13,18 @@ public class SuccUtils {
 		float rads = (float) Math.toRadians(degrees);
 		float sin = Mth.sin(rads);
 		float cos = Mth.cos(rads);
-		double newX = -(vec.x * cos - vec.z * sin);
-		double newZ = -(vec.x * sin + vec.z * cos);
+		double newX = vec.x * cos - vec.z * sin;
+		double newZ = vec.x * sin + vec.z * cos;
 		return new Vec3(newX, vec.y, newZ);
+	}
+
+	public static Vector3f rotateVec(Vector3f vec, double degrees) {
+		float rads = (float) Math.toRadians(degrees);
+		float sin = Mth.sin(rads);
+		float cos = Mth.cos(rads);
+		float newX = vec.x() * cos - vec.z() * sin;
+		float newZ = vec.x() * sin + vec.z() * cos;
+		return new Vector3f(newX, vec.y(), newZ);
 	}
 
 	public static boolean isClose(double x, double y, double z, Vec3 target) {

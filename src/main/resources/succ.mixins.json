@@ -4,6 +4,8 @@
   "package": "one.devos.nautical.succ.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ServerGamePacketListenerImplMixin",
+    "ServerPlayerGameModeMixin"
   ],
   "client": [
     "EntityMixin",
