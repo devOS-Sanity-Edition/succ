@@ -381,12 +381,10 @@ public class ClimbingSuctionCupEntity extends Entity {
 	private static void executeOnServerWithCup(MinecraftServer server, ServerPlayer player, SuctionCupLimb limb, BiConsumer<ClimbingState, ClimbingSuctionCupEntity> consumer) {
 		server.execute(() -> {
 			ClimbingState state = GlobalClimbingManager.getState(player);
-			if (!state.isClimbing()) {
-				Succ.LOGGER.warn("Suction cup update from non-climbing player: [{}], [{}]", limb, player.getGameProfile().getName());
-				return;
+			if (state.isClimbing()) {
+				ClimbingSuctionCupEntity entity = state.entities.get(limb);
+				consumer.accept(state, entity);
 			}
-			ClimbingSuctionCupEntity entity = state.entities.get(limb);
-			consumer.accept(state, entity);
 		});
 	}
 
