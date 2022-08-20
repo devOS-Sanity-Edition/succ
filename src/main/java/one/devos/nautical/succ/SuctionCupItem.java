@@ -23,7 +23,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class SuctionCupItem extends Item {
 	public static final EquipmentSlot[] CUP_SLOTS = { EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.FEET };
-	public static final TagKey<Item> CLIMBING_CUPS = TagKey.create(Registry.ITEM_REGISTRY, Succ.id("climbing_cups"));
+	public static final TagKey<Item> HAND_CLIMBING_CUPS = TagKey.create(Registry.ITEM_REGISTRY, Succ.id("hand_climbing_cups"));
+	public static final TagKey<Item> FEET_CLIMBING_CUPS = TagKey.create(Registry.ITEM_REGISTRY, Succ.id("feet_climbing_cups"));
 	public static final Component TOO_FAR = Component.translatable("succ.wallTooFar");
 	public static final Component MISSING_CUPS = Component.translatable("succ.missingCups");
 	public static final Component OBSTRUCTED = Component.translatable("succ.obstructed");
@@ -79,7 +80,8 @@ public class SuctionCupItem extends Item {
 	public static boolean missingCups(Player player) {
 		for (EquipmentSlot slot : CUP_SLOTS) {
 			ItemStack stack = player.getItemBySlot(slot);
-			if (!stack.is(CLIMBING_CUPS)) {
+			TagKey<Item> tagToCheck = slot == EquipmentSlot.FEET ? FEET_CLIMBING_CUPS : HAND_CLIMBING_CUPS;
+			if (!stack.is(tagToCheck)) {
 				return true; // missing suction cups
 			}
 		}
