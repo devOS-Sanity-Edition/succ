@@ -12,6 +12,7 @@ The Suction Cup is a powerful tool. Using it, you can climb walls!
 To get climbing, you'll need a pair of Suction Cups, and a set of Suction Cup Boots.
 
 ![The recipe for one Suction Cup](https://github.com/devOS-Sanity-Edition/succ/blob/1.19/readme_assets/suction_cup_recipe.png?raw=true)
+
 ![The recipe for one set of Suction Cup Boots](https://github.com/devOS-Sanity-Edition/succ/blob/1.19/readme_assets/suction_cup_boots_recipe.png?raw=true)
 
 Featuring EMI integration!
