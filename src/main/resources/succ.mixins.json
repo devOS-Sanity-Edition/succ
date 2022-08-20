@@ -16,6 +16,7 @@
     "KeyboardInputMixin",
     "KeyMappingAccessor",
     "KeyMappingMixin",
+    "LocalPlayerMixin",
     "MinecraftMixin",
     "PlayerItemInHandLayerMixin",
     "PlayerRendererMixin"

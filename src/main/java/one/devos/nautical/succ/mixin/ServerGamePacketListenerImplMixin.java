@@ -1,5 +1,6 @@
 package one.devos.nautical.succ.mixin;
 
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
@@ -23,6 +24,21 @@ public class ServerGamePacketListenerImplMixin {
 	private void succ$climbingIsNotFlying(CallbackInfo ci) {
 		if (GlobalClimbingManager.isClimbing(player)) {
 			aboveGroundTickCount = 0;
+		}
+	}
+
+	@Inject(
+			method = "handlePlayerAction",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/server/level/ServerPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;",
+					ordinal = 0
+			),
+			cancellable = true
+	)
+	private void succ$preventOffhandSwap(ServerboundPlayerActionPacket packet, CallbackInfo ci) {
+		if (GlobalClimbingManager.isClimbing(player)) {
+			ci.cancel();
 		}
 	}
 }
