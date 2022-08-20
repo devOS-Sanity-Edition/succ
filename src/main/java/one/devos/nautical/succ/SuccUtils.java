@@ -24,7 +24,8 @@ public class SuccUtils {
 		float cos = Mth.cos(rads);
 		float newX = vec.x() * cos - vec.z() * sin;
 		float newZ = vec.x() * sin + vec.z() * cos;
-		return new Vector3f(newX, vec.y(), newZ);
+		vec.set(newX, vec.y(), newZ);
+		return vec;
 	}
 
 	public static boolean isClose(double x, double y, double z, Vec3 target) {

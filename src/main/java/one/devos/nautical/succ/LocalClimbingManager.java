@@ -72,6 +72,7 @@ public class LocalClimbingManager {
 			cups.add(Triple.of(key, limb, entity));
 		});
 		LocalPlayer player = mc.player;
+		player.yBodyRot = player.getYRot();
 		float playerYaw = player.getYRot();
 		minYaw = playerYaw - (DEFAULT_ROTATION_RANGE / 2f);
 		maxYaw = playerYaw + (DEFAULT_ROTATION_RANGE / 2f);
