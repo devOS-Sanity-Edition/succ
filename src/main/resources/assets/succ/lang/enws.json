@@ -23,5 +23,7 @@
   "succ.stopClimbing": "Stand ho climbing in %s...",
 
   "advancements.succ.twister_champion.title": "Twisteth'r champion",
-  "advancements.succ.twister_champion.description": "Ouch oof owie mine own bones"
+  "advancements.succ.twister_champion.description": "Ouch oof owie mine own bones",
+
+  "itemGroup.succ.succ": "Succ™"
 }
