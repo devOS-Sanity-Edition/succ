@@ -13,12 +13,14 @@
   "succ.missingCups": "You need suction cups on all 4 limbs to climb.",
   "succ.obstructed": "Climbing here will place you inside a block.",
   "succ.onlyWalls": "You can only climb on walls.",
+  "succ.notEnoughWall": "There isn't enough wall to climb here.",
+
+  "succ.cupObstructedLiquid": "Liquid prevents your suction cups from sticking.",
 
   "succ.tooFar": "You can't reach that far.",
   "succ.cupObstructedBlock": "A block is in the way.",
   "succ.cupObstructedOther": "Another Suction Cup is in the way.",
   "succ.cupObstructedBadWall": "A Suction Cup can't stick to this wall.",
-  "succ.cupObstructedLiquid": "Liquid prevents your suction cups from sticking.",
 
   "succ.stopClimbing": "Stop climbing in %s...",
 

@@ -17,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,6 +28,8 @@ public class SuctionCupItem extends Item {
 	public static final Component MISSING_CUPS = Component.translatable("succ.missingCups");
 	public static final Component OBSTRUCTED = Component.translatable("succ.obstructed");
 	public static final Component ONLY_WALLS = Component.translatable("succ.onlyWalls");
+	public static final Component OBSTRUCTED_LIQUID = Component.translatable("succ.cupObstructedLiquid");
+	public static final Component NOT_ENOUGH_WALL = Component.translatable("succ.notEnoughWall");
 
 	public SuctionCupItem(Properties properties) {
 		super(properties);
@@ -66,7 +69,6 @@ public class SuctionCupItem extends Item {
 		BlockPos wallPos = ctx.getClickedPos();
 		BlockPos headPos = wallPos.relative(ctx.getClickedFace());
 		if (climbPosObstructed(player, level, clickPos, headPos, clickedFace)) {
-			fail(player, OBSTRUCTED);
 			return;
 		}
 		// offset to the center of the block to prevent getting stuck in adjacent walls
@@ -88,12 +90,23 @@ public class SuctionCupItem extends Item {
 		return clickPos.distanceTo(player.position()) > 2.5;
 	}
 
-	public static boolean climbPosObstructed(Player player, Level level, Vec3 clickPos, BlockPos headPos, Direction clickedFace) {
+	public static boolean climbPosObstructed(ServerPlayer player, Level level, Vec3 clickPos, BlockPos headPos, Direction clickedFace) {
+		Direction facing = clickedFace.getOpposite();
 		AABB bounds = player.getDimensions(Pose.STANDING).makeBoundingBox(player.position());
 		double height = bounds.maxY - bounds.minY;
 		BlockPos bottomToCheck = new BlockPos(headPos.getX(), clickPos.y - height, headPos.getZ());
 		for (BlockPos pos : BlockPos.betweenClosed(headPos, bottomToCheck)) {
-			if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
+			BlockState state = level.getBlockState(pos);
+			if (!state.getCollisionShape(level, pos).isEmpty()) {
+				fail(player, OBSTRUCTED);
+				return true;
+			} else if (!state.getFluidState().isEmpty()) {
+				fail(player, OBSTRUCTED_LIQUID);
+				return true;
+			}
+			BlockPos wallPos = pos.relative(facing);
+			if (level.getBlockState(wallPos).getCollisionShape(level, wallPos).isEmpty()) {
+				fail(player, NOT_ENOUGH_WALL);
 				return true;
 			}
 		}

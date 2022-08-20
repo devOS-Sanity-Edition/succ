@@ -42,7 +42,6 @@ public class LocalClimbingManager {
 	public static final Component CUP_OBSTRUCTED_BLOCK = Component.translatable("succ.cupObstructedBlock");
 	public static final Component CUP_OBSTRUCTED_OTHER = Component.translatable("succ.cupObstructedOther");
 	public static final Component CUP_OBSTRUCTED_BAD_WALL = Component.translatable("succ.cupObstructedBadWall"); // TODO
-	public static final Component CUP_OBSTRUCTED_LIQUID = Component.translatable("succ.cupObstructedLiquid");
 	public static final Component STOP_3 = Component.translatable("succ.stopClimbing", 3).withStyle(ChatFormatting.GOLD);
 	public static final Component STOP_2 = Component.translatable("succ.stopClimbing", 2).withStyle(ChatFormatting.GOLD);
 	public static final Component STOP_1 = Component.translatable("succ.stopClimbing", 1).withStyle(ChatFormatting.GOLD);
@@ -193,7 +192,7 @@ public class LocalClimbingManager {
 		}
 		FluidState fluid = state.getFluidState();
 		if (!fluid.isEmpty()) {
-			sendNotification(player, level, direction, CUP_OBSTRUCTED_LIQUID);
+			sendNotification(player, level, direction, SuctionCupItem.OBSTRUCTED_LIQUID);
 			return false;
 		}
 		for (Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup : cups) {
