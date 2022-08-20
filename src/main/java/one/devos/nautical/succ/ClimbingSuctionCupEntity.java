@@ -266,9 +266,9 @@ public class ClimbingSuctionCupEntity extends Entity {
 	public void readExtraPacketData(FriendlyByteBuf buf) {
 		this.limb = buf.readEnum(SuctionCupLimb.class);
 		UUID playerId = buf.readUUID();
+		this.facing = buf.readEnum(Direction.class);
 		this.climbingState = GlobalClimbingManager.getState(playerId, level.isClientSide());
 		this.climbingState.entities.put(limb, this);
-		this.facing = buf.readEnum(Direction.class);
 		setYRot(facing.toYRot());
 		this.stuckPos = SuccUtils.readVec(buf);
 		this.unstuckPos = SuccUtils.readVec(buf);

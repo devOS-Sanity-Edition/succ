@@ -8,9 +8,10 @@ import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import one.devos.nautical.succ.LocalClimbingManager;
+import one.devos.nautical.succ.GlobalClimbingManager;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +24,7 @@ public class PlayerItemInHandLayerMixin {
 	private void succ$hideHeldItemsWhenClimbing(LivingEntity entity, ItemStack stack, TransformType transformationMode,
 												HumanoidArm arm, PoseStack matrices, MultiBufferSource vertexConsumers,
 												int light, CallbackInfo ci) {
-		if (LocalClimbingManager.INSTANCE != null) {
+		if (entity instanceof Player player && GlobalClimbingManager.isClimbing(player)) {
 			ci.cancel();
 		}
 	}

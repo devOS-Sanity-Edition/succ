@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 
-import one.devos.nautical.succ.LocalClimbingManager;
+import one.devos.nautical.succ.GlobalClimbingManager;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
 	@Inject(method = "setModelProperties", at = @At("TAIL"))
 	private void succ$hideLimbsWhenClimbing(AbstractClientPlayer player, CallbackInfo ci) {
-		if (LocalClimbingManager.INSTANCE != null) {
+		if (GlobalClimbingManager.isClimbing(player)) {
 			PlayerModel<AbstractClientPlayer> model = this.getModel();
 			model.leftArm.visible = false;
 			model.leftSleeve.visible = false;

@@ -134,7 +134,7 @@ public class GlobalClimbingManager {
 		} else {
 			removeCupEntities(player, state);
 		}
-		sendUpdatedStateToAll(state, player.server);
+		sendUpdatedStateToAll(state, player.server, false);
 	}
 
 	private static void addCupEntities(ServerPlayer player, ClimbingState state, Vec3 clickPos, Direction facing) {
@@ -160,13 +160,16 @@ public class GlobalClimbingManager {
 		state.entities.clear();
 	}
 
-	private static void sendUpdatedStateToAll(ClimbingState state, MinecraftServer server) {
-		ServerPlayNetworking.send(PlayerLookup.all(server), STATE_CHANGE_PACKET, state.syncClimbStatusToNetwork());
+	private static void sendUpdatedStateToAll(ClimbingState state, MinecraftServer server, boolean all) {
+		ServerPlayNetworking.send(PlayerLookup.all(server), STATE_CHANGE_PACKET, all ? state.syncAllToNetwork() : state.syncClimbStatusToNetwork());
 	}
 
 	public static void onPlayerJoin(ServerGamePacketListenerImpl handler, PacketSender sender, MinecraftServer server) {
 		ClimbingState newState = new ClimbingState(handler.player.getUUID());
 		putState(newState, false);
+		// send player to all
+		sendUpdatedStateToAll(newState, server, true);
+		// send all to player
 		get(false).states.forEach((uuid, state) -> sender.sendPacket(STATE_CHANGE_PACKET, state.syncAllToNetwork()));
 	}
 
