@@ -23,5 +23,7 @@
   "succ.stopClimbing": "Stop climbing in %s...",
 
   "advancements.succ.twister_champion.title": "Twister Champion",
-  "advancements.succ.twister_champion.description": "Ouch oof owie my bones"
+  "advancements.succ.twister_champion.description": "Ouch oof owie my bones",
+
+  "itemGroup.succ.succ": "Succ™"
 }
