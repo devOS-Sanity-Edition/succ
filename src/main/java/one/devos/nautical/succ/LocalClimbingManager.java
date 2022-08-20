@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @Environment(EnvType.CLIENT)
 public class LocalClimbingManager {
@@ -52,10 +53,10 @@ public class LocalClimbingManager {
 	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups = new ArrayList<>();
 	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> liftedCups = new LinkedList<>();
 
-	private Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> movedCup = null;
+	Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> movedCup = null;
 	private int initialCooldown = 10;
 	private int ticksTillStop = 0;
-	private SuctionCupMoveDirection lastInputDirection = null;
+	SuctionCupMoveDirection lastInputDirection = null;
 	private Component lastSentMessage = null;
 
 	/**
@@ -233,18 +234,24 @@ public class LocalClimbingManager {
 			ClimbingSuctionCupEntity entity = triple.getRight();
 			if (key.consumeClick()) {
 				boolean suction = entity.getSuction();
-				if (suction) { // was on the wall, now will not be
-					movedCup = triple;
-					liftedCups.add(triple);
-					entity.setSuctionFromClient(false);
-				} else { // placed onto the wall
-					liftedCups.remove(triple);
-					movedCup = liftedCups.isEmpty() ? null : liftedCups.get(liftedCups.size() - 1);
-					lastInputDirection = null;
-					entity.setSuctionFromClient(true);
-				}
+				entity.setSuctionFromClient(!suction);
 			}
 			while (key.consumeClick()); // get rid of extras
+		});
+	}
+
+	public void entitySuctionUpdated(ClimbingSuctionCupEntity entity) {
+		Optional<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> maybeTriple =
+				cups.stream().filter(t -> t.getRight() == entity).findFirst();
+		maybeTriple.ifPresent(triple -> {
+			if (entity.getSuction()) { // placed down
+				liftedCups.remove(triple);
+				movedCup = liftedCups.isEmpty() ? null : liftedCups.get(liftedCups.size() - 1);
+				lastInputDirection = null;
+			} else { // picked up
+				movedCup = triple;
+				liftedCups.add(triple);
+			}
 		});
 	}
 
