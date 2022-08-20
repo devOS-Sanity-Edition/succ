@@ -19,12 +19,18 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
+import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
 import one.devos.nautical.succ.model.DepressedSuctionCupModel;
 import one.devos.nautical.succ.model.SuctionCupModel;
+
+import static one.devos.nautical.succ.SuccUtils.axisChoose;
+import static one.devos.nautical.succ.SuccUtils.floatNormal;
 
 public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupEntity> {
 	public static final float LIMB_LENGTH = 13; // found through trial and error, the length of a limb in ModelPart space
@@ -42,13 +48,14 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 
 	@Override
 	public void render(ClimbingSuctionCupEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
-		if (!entity.isInvisible()) {
-			renderEntity(entity, yaw, tickDelta, matrices, vertexConsumers, light);
-			renderPlayerLimb(entity, yaw, tickDelta, matrices, vertexConsumers, light);
-		}
+		renderEntity(entity, yaw, tickDelta, matrices, vertexConsumers, light);
+		renderPlayerLimb(entity, yaw, tickDelta, matrices, vertexConsumers, light);
 	}
 
 	public void renderEntity(ClimbingSuctionCupEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
+		if (entity.isInvisible())
+			return;
+
 		matrices.pushPose();
 
 		matrices.scale(0.75f, 0.75f, 0.75f);
@@ -72,87 +79,131 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 	public void renderPlayerLimb(ClimbingSuctionCupEntity entity, float entityYaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
 		if (!(entity.getOwner() instanceof AbstractClientPlayer owner))
 			return;
+		if (owner.isInvisible())
+			return;
 		EntityRenderer<? super LocalPlayer> playerRenderer = mc.getEntityRenderDispatcher().getRenderer(owner);
 		if (!(playerRenderer instanceof PlayerRenderer renderer))
 			return;
 		PlayerModel<AbstractClientPlayer> playerModel = renderer.getModel();
-		SuctionCupLimb limb = entity.limb;
-		ModelPart limbPart = switch (limb) {
-			case LEFT_HAND -> playerModel.leftArm;
-			case RIGHT_HAND -> playerModel.rightArm;
-			case LEFT_FOOT -> playerModel.leftLeg;
-			case RIGHT_FOOT -> playerModel.rightLeg;
-		};
-		boolean oldLimbVisibility = limbPart.visible;
-		limbPart.visible = true;
-		ModelPart overlay = switch (limb) {
-			case LEFT_HAND -> playerModel.leftSleeve;
-			case RIGHT_HAND -> playerModel.rightSleeve;
-			case LEFT_FOOT -> playerModel.leftPants;
-			case RIGHT_FOOT -> playerModel.rightPants;
-		};
-		boolean oldOverlayVisibility = overlay.visible;
-		PlayerModelPart part = switch (limb) {
-			case LEFT_HAND -> PlayerModelPart.LEFT_SLEEVE;
-			case RIGHT_HAND -> PlayerModelPart.RIGHT_SLEEVE;
-			case LEFT_FOOT -> PlayerModelPart.LEFT_PANTS_LEG;
-			case RIGHT_FOOT -> PlayerModelPart.RIGHT_PANTS_LEG;
-		};
-		overlay.visible = owner.isModelPartShown(part);
 
-		float limbXOld = limbPart.x;
-		float limbYOld = limbPart.y;
-		float limbZOld = limbPart.z;
+		SuctionCupLimb limb = entity.limb;
+		Vec3 handlePos = entity.getHandlePos(tickDelta);
+
+		ModelState state = prepareModel(owner, playerModel, limb);
+		ModelPart limbPart = state.limbPart;
+		ModelPart overlay = state.overlay;
+
+		Direction facing = entity.facing;
+		Axis facingAxis = facing.getAxis();
+		Direction right = facing.getClockWise();
+		Axis rightAxis = right.getAxis();
+
+		int mult = facing.getAxisDirection().getStep();
 
 		Vec3 playerPos = owner.getPosition(tickDelta);
-		Direction facing = entity.facing;
-		Vec3 limbConnection = playerPos.add(SuccUtils.rotateVec(limb.offsetFromPlayer, facing.toYRot()));
-		Vec3 handlePos = entity.getHandlePos(tickDelta);
-		boolean depressed = entity.getSuction() && !entity.isMoving();
-
-		double dX = limbConnection.x - handlePos.x;
-		double dY = limbConnection.y - handlePos.y;
-		double dZ = limbConnection.z - handlePos.z;
-
-		float yaw = (float) -Math.atan2(dX, dZ) + (Mth.DEG_TO_RAD * facing.getOpposite().toYRot());
-		float pitch = (float) Math.atan2(dY, dZ) - Mth.HALF_PI;
-		limbPart.setRotation(pitch, yaw, Mth.PI);
-
-		float distance = Mth.sqrt((float) (dX * dX + dY * dY + dZ * dZ));
-
-		float x = (Mth.sin(yaw) * LIMB_LENGTH);
-		float y = (Mth.cos(pitch) * LIMB_LENGTH) + 3;
-		float z = (Mth.cos(yaw) * distance) - 10;
-		if (!depressed) {
-			z -= 2.5;
+		Vec3 limbConnection = limb.offsetFromPlayer.multiply(mult, 1, mult);
+		if (facingAxis == Axis.X) {
+			limbConnection = SuccUtils.rotateVec(limbConnection.multiply(-1, 1, 1).add(0.1, 0, 0), 90);
 		}
 
-		Vector3f limbPos = SuccUtils.rotateVec(new Vector3f(x, y, z), facing.toYRot());
-		limbPart.setPos(limbPos.x(), limbPos.y(), limbPos.z());
+		Vec3 handleRelative = handlePos.subtract(playerPos);
 
+		// FIXME this code might be an info-hazard
+
+		double dX = axisChoose(rightAxis, limbConnection) - axisChoose(rightAxis, handleRelative);
+		double dY = limbConnection.y - handleRelative.y;
+		double dZ = axisChoose(facingAxis, limbConnection) - axisChoose(facingAxis, handleRelative);
+		float distance = Mth.sqrt((float) (dX * dX + dY * dY + dZ * dZ));
+
+		float yaw, pitch, roll, x, y, z;
+
+		if (facingAxis == Axis.Z) {
+			yaw = (float) Math.atan2(dX, dZ) * mult * -mult;
+			pitch = (float) (Math.atan2(dY, dZ) * -mult) + Mth.HALF_PI * mult;
+			roll = Mth.PI;
+			x = -(Mth.sin(yaw) * LIMB_LENGTH);
+			y = (Mth.cos(pitch) * LIMB_LENGTH) + 3;
+			z = (Mth.cos(yaw) * distance) - 7 * mult;
+		} else {
+			pitch = Mth.HALF_PI;
+			roll = (float) (Math.atan2(dY, dZ) * mult) + Mth.HALF_PI * mult - Mth.HALF_PI; // actually pitch
+			if (facing.getAxisDirection() == AxisDirection.NEGATIVE) {
+				roll += Mth.PI;
+				roll *= mult;
+			}
+			yaw = (float) Math.atan2(dZ, dX) * -mult + Mth.PI;
+			z = -(Mth.cos(yaw) * LIMB_LENGTH) - 2; // actually x
+			y = (Mth.sin(roll) * LIMB_LENGTH) + 3;
+			x = (Mth.sin(yaw) * distance) * mult - 9 * mult; // actually z
+		}
+
+		limbPart.setRotation(pitch, yaw, roll);
+		limbPart.setPos(x, y, z);
 		overlay.copyFrom(limbPart);
 
 		VertexConsumer consumer = vertexConsumers.getBuffer(RenderType.entityTranslucent(owner.getSkinTextureLocation()));
 
 		matrices.pushPose();
 
+		matrices.pushPose();
 		limbPart.render(matrices, consumer, light, OverlayTexture.NO_OVERLAY);
+		matrices.popPose();
+		matrices.pushPose();
 		overlay.render(matrices, consumer, light, OverlayTexture.NO_OVERLAY);
+		matrices.popPose();
 
 		matrices.popPose();
 
-		limbPart.x = limbXOld;
-		limbPart.y = limbYOld;
-		limbPart.z = limbZOld;
-		limbPart.visible = oldLimbVisibility;
-		overlay.x = limbXOld;
-		overlay.y = limbYOld;
-		overlay.z = limbZOld;
-		overlay.visible = oldOverlayVisibility;
+		state.restore();
 	}
 
 	@Override
 	public ResourceLocation getTextureLocation(ClimbingSuctionCupEntity entity) {
 		return SuctionCupModel.TEXTURE;
+	}
+
+	public static ModelState prepareModel(AbstractClientPlayer owner, PlayerModel<AbstractClientPlayer> model, SuctionCupLimb limb) {
+		ModelPart limbPart = getLimb(model, limb);
+		ModelPart overlay = getOverlay(model, limb);
+		PlayerModelPart part = limb.playerPart;
+		ModelState state = new ModelState(
+				limbPart, limbPart.visible, overlay, overlay.visible,
+				limbPart.x, limbPart.y, limbPart.z, limbPart.xRot, limbPart.yRot, limbPart.zRot
+		);
+		limbPart.setPos(0, 0, 0);
+		limbPart.setRotation(0, 0, 0);
+		overlay.copyFrom(limbPart);
+		limbPart.visible = true;
+		overlay.visible = owner.isModelPartShown(part);
+		return state;
+	}
+
+	public static ModelPart getLimb(PlayerModel<AbstractClientPlayer> model, SuctionCupLimb limb) {
+		return switch (limb) {
+			case LEFT_HAND -> model.leftArm;
+			case RIGHT_HAND -> model.rightArm;
+			case LEFT_FOOT -> model.leftLeg;
+			case RIGHT_FOOT -> model.rightLeg;
+		};
+	}
+
+	public static ModelPart getOverlay(PlayerModel<AbstractClientPlayer> model, SuctionCupLimb limb) {
+		return switch (limb) {
+			case LEFT_HAND -> model.leftSleeve;
+			case RIGHT_HAND -> model.rightSleeve;
+			case LEFT_FOOT -> model.leftPants;
+			case RIGHT_FOOT -> model.rightPants;
+		};
+	}
+
+	public record ModelState(ModelPart limbPart, boolean limbVisible, ModelPart overlay, boolean overlayVisible,
+							 float x, float y, float z, float pitch, float yaw, float roll) {
+		public void restore() {
+			limbPart.setPos(x, y, z);
+			limbPart.setRotation(pitch, yaw, roll);
+			overlay.copyFrom(limbPart);
+			limbPart.visible = limbVisible;
+			overlay.visible = overlayVisible;
+		}
 	}
 }
