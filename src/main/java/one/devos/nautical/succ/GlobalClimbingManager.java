@@ -114,6 +114,9 @@ public class GlobalClimbingManager {
 
 	private static void moveNewClimber(ServerPlayer player, Vec3 clickPos, Direction facing) {
 		player.stopRiding();
+		if (player.isFallFlying()) {
+			player.stopFallFlying();
+		}
 		player.fallDistance = 0;
 		Vec3i facingNormal = facing.getNormal();
 		Vec3 offset = new Vec3(facingNormal.getX(), facingNormal.getY(), facingNormal.getZ());
