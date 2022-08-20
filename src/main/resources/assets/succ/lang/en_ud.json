@@ -12,5 +12,16 @@
   "succ.wallTooFar": "˙qɯᴉlɔ oʇ ʎɐʍɐ ɹɐɟ ooʇ sᴉ llɐʍ sᴉɥ┴",
   "succ.missingCups": "˙qɯᴉlɔ oʇ sqɯᴉl ㄣ llɐ uo sdnɔ uoᴉʇɔns pǝǝu no⅄",
   "succ.obstructed": "˙ʞɔolq ɐ ǝpᴉsuᴉ noʎ ǝɔɐld llᴉʍ ǝɹǝɥ ƃuᴉqɯᴉlƆ",
-  "succ.onlyWalls": "˙sllɐʍ uo qɯᴉlɔ ʎluo uɐɔ no⅄"
+  "succ.onlyWalls": "˙sllɐʍ uo qɯᴉlɔ ʎluo uɐɔ no⅄",
+
+  "succ.tooFar": "˙ɹɐɟ ʇɐɥʇ ɥɔɐǝɹ ʇ,uɐɔ no⅄",
+  "succ.cupObstructedBlock": "˙ʎɐʍ ǝɥʇ uᴉ sᴉ ʞɔolq ∀",
+  "succ.cupObstructedOther": "˙ʎɐʍ ǝɥʇ uᴉ sᴉ dnƆ uoᴉʇɔnS ɹǝɥʇou∀",
+  "succ.cupObstructedBadWall": "˙llɐʍ sᴉɥʇ oʇ ʞɔᴉʇs ʇ,uɐɔ dnƆ uoᴉʇɔnS ∀",
+  "succ.cupObstructedLiquid": "˙ƃuᴉʞɔᴉʇs ɯoɹɟ sdnɔ uoᴉʇɔns ɹnoʎ sʇuǝʌǝɹd pᴉnbᴉ˥",
+
+  "succ.stopClimbing": "˙˙˙%s uᴉ ƃuᴉqɯᴉlɔ doʇS",
+
+  "advancements.succ.twister_champion.title": "uoᴉdɯɐɥƆ ɹǝʇsᴉʍ┴",
+  "advancements.succ.twister_champion.description": "sǝuoq ʎɯ ǝᴉʍo ɟoo ɥɔnO"
 }

@@ -12,5 +12,16 @@
   "succ.wallTooFar": "This mure is too far hence to climb.",
   "succ.missingCups": "Thee needeth suction cups on all 4 limbs to climb.",
   "succ.obstructed": "Climbing h're shall lodging thee inside a block.",
-  "succ.onlyWalls": "Thee can only climb on walls."
+  "succ.onlyWalls": "Thee can only climb on walls.",
+
+  "succ.tooFar": "Thee can't reacheth yond far.",
+  "succ.cupObstructedBlock": "A block is in the way.",
+  "succ.cupObstructedOther": "Anoth'r suction cuppeth is in the way.",
+  "succ.cupObstructedBadWall": "A suction cuppeth can't sticketh to this mure.",
+  "succ.cupObstructedLiquid": "Liquid prevents thy suction cups from sticking.",
+
+  "succ.stopClimbing": "Stand ho climbing in %s...",
+
+  "advancements.succ.twister_champion.title": "Twisteth'r champion",
+  "advancements.succ.twister_champion.description": "Ouch oof owie mine own bones"
 }

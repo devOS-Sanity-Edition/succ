@@ -12,5 +12,16 @@
   "succ.wallTooFar": "tHIZ Wew w to faw owai tO CWimb!!?!",
   "succ.missingCups": "oh hi u nd sucshun cupZ ON Aw 4 wimbZ to cwimb?!!",
   "succ.obstructed": "oh HI cwimbin hew wiw pWAs u eNSIDE bwok!!?",
-  "succ.onlyWalls": "u cAN onwe cwimb on wawz!!!"
+  "succ.onlyWalls": "u cAN onwe cwimb on wawz!!!",
+
+  "succ.tooFar": "u cant reech that far?!?",
+  "succ.cupObstructedBlock": "bLok R IN TEh wai?!!",
+  "succ.cupObstructedOther": "anothr sucshun Cup r in teh wai?!?",
+  "succ.cupObstructedBadWall": "Sucshun cup cant stik tO THIz wel??!",
+  "succ.cupObstructedLiquid": "oh hi likwId prEVENTZ UR sUCSHUn cupz frum sTIKIN??",
+
+  "succ.stopClimbing": "oh HI Stop climbin iN %s... PLz?!",
+
+  "advancements.succ.twister_champion.title": "twISTR CHAMPion",
+  "advancements.succ.twister_champion.description": "ouch FOW owie MY BONE jWUiCEE >W<"
 }
