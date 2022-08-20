@@ -117,11 +117,7 @@ public class GlobalClimbingManager {
 		player.fallDistance = 0;
 		Vec3i facingNormal = facing.getNormal();
 		Vec3 offset = new Vec3(facingNormal.getX(), facingNormal.getY(), facingNormal.getZ());
-		double posOffset = START_CLIMB_POS_OFFSET;
-		if (facing.getAxisDirection() == AxisDirection.POSITIVE) {
-			posOffset *= 4.3; // weird magic number to make positioning match, I don't understand why it's different
-		}
-		offset = offset.scale(posOffset);
+		offset = offset.scale(START_CLIMB_POS_OFFSET);
 		Vec3 climberPos = clickPos.subtract(offset);
 		player.connection.teleport(climberPos.x, climberPos.y - player.getEyeHeight(), climberPos.z, facing.toYRot(), 0);
 	}
@@ -144,11 +140,6 @@ public class GlobalClimbingManager {
 		}
 		for (SuctionCupLimb limb : SuctionCupLimb.values()) {
 			Vec3 cupPos = clickPos.add(SuccUtils.rotateVec(limb.cupOffset, facing.toYRot()));
-			// why is this needed???
-			if (facing.getAxisDirection() == AxisDirection.POSITIVE) {
-				Vec3i offset = facing.getOpposite().getNormal();
-				cupPos = cupPos.add(offset.getX(), offset.getY(), offset.getZ());
-			}
 			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, cupPos, state, facing);
 			level.addFreshEntity(entity);
 			state.entities.put(limb, entity);
