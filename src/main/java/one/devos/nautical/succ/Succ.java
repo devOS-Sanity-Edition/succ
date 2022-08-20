@@ -28,8 +28,8 @@ public class Succ implements ModInitializer {
 	public static TwisterChampionTrigger TWISTER_CHAMPION = CriteriaTriggers.register(new TwisterChampionTrigger());
 	public static final QuiltItemGroup SUCC_ITEM_GROUP = QuiltItemGroup.builder(id("succ")).build();
 
-	public static Item SUCTION_CUP = new SuctionCupItem(new QuiltItemSettings().equipmentSlot(EquipmentSlot.HEAD).group(SUCC_ITEM_GROUP));
-	public static Item SUCTION_CUP_BOOTS = new Item(new QuiltItemSettings().equipmentSlot(EquipmentSlot.FEET).group(SUCC_ITEM_GROUP));
+	public static Item SUCTION_CUP = new SuctionCupItem(new QuiltItemSettings().equipmentSlot(EquipmentSlot.HEAD).maxCount(2).group(SUCC_ITEM_GROUP));
+	public static Item SUCTION_CUP_BOOTS = new Item(new QuiltItemSettings().equipmentSlot(EquipmentSlot.FEET).maxCount(1).group(SUCC_ITEM_GROUP));
 	@SuppressWarnings("deprecation") // entity constructor deprecated to prevent misuse, should only be used here
 	public static EntityType<ClimbingSuctionCupEntity> SUCTION_CUP_ENTITY_TYPE = FabricEntityTypeBuilder
 			.<ClimbingSuctionCupEntity>create(MobCategory.MISC, ClimbingSuctionCupEntity::new)
