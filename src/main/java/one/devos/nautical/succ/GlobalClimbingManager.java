@@ -181,6 +181,12 @@ public class GlobalClimbingManager {
 		ServerPlayNetworking.send(PlayerLookup.all(server), STATE_CHANGE_PACKET,  buf);
 	}
 
+	public static void onRespawn(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
+		if (isClimbing(oldPlayer)) {
+			stopClimbing(oldPlayer);
+		}
+	}
+
 	public static void stopRequested(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler,
 									 FriendlyByteBuf buf, PacketSender responseSender) {
 		BlockPos stopPos = buf.readBlockPos();
