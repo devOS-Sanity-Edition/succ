@@ -190,6 +190,12 @@ public class GlobalClimbingManager {
 		}
 	}
 
+	public static void onTeleport(ServerPlayer player, ServerLevel origin, ServerLevel destination) {
+		if (isClimbing(player)) {
+			stopClimbing(player);
+		}
+	}
+
 	public static void stopRequested(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler,
 									 FriendlyByteBuf buf, PacketSender responseSender) {
 		BlockPos stopPos = buf.readBlockPos();

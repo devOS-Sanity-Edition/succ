@@ -1,5 +1,6 @@
 package one.devos.nautical.succ;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -46,6 +47,7 @@ public class Succ implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register(GlobalClimbingManager::onPlayerJoin);
 		ServerPlayConnectionEvents.DISCONNECT.register(GlobalClimbingManager::onPlayerLeave);
 		ServerPlayerEvents.AFTER_RESPAWN.register(GlobalClimbingManager::onRespawn);
+		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(GlobalClimbingManager::onTeleport);
 		ClimbingSuctionCupEntity.networkingInit();
 		GlobalClimbingManager.networkingInit();
 	}
