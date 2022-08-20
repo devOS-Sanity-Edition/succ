@@ -63,13 +63,14 @@ public class SuctionCupItem extends Item {
 			fail(player, TOO_FAR);
 			return;
 		}
-
-		if (climbPosObstructed(player, level, clickPos, ctx.getClickedPos(), clickedFace)) {
+		BlockPos wallPos = ctx.getClickedPos();
+		BlockPos headPos = wallPos.relative(ctx.getClickedFace());
+		if (climbPosObstructed(player, level, clickPos, headPos, clickedFace)) {
 			fail(player, OBSTRUCTED);
 			return;
 		}
 		// offset to the center of the block to prevent getting stuck in adjacent walls
-		clickPos = new Vec3(Math.floor(clickPos.x) + 0.5, clickPos.y, Math.floor(clickPos.z) + 0.5);
+		clickPos = new Vec3(Math.floor(headPos.getX()) + 0.5, clickPos.y, Math.floor(headPos.getZ()) + 0.5);
 		GlobalClimbingManager.startClimbing(player, clickPos, clickedFace);
 	}
 
@@ -87,12 +88,11 @@ public class SuctionCupItem extends Item {
 		return clickPos.distanceTo(player.position()) > 2.5;
 	}
 
-	public static boolean climbPosObstructed(Player player, Level level, Vec3 clickPos, BlockPos clickedBlock, Direction clickedFace) {
-		BlockPos topToCheck = clickedBlock.relative(clickedFace);
+	public static boolean climbPosObstructed(Player player, Level level, Vec3 clickPos, BlockPos headPos, Direction clickedFace) {
 		AABB bounds = player.getDimensions(Pose.STANDING).makeBoundingBox(player.position());
 		double height = bounds.maxY - bounds.minY;
-		BlockPos bottomToCheck = new BlockPos(topToCheck.getX(), clickPos.y - height, topToCheck.getZ());
-		for (BlockPos pos : BlockPos.betweenClosed(topToCheck, bottomToCheck)) {
+		BlockPos bottomToCheck = new BlockPos(headPos.getX(), clickPos.y - height, headPos.getZ());
+		for (BlockPos pos : BlockPos.betweenClosed(headPos, bottomToCheck)) {
 			if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
 				return true;
 			}
