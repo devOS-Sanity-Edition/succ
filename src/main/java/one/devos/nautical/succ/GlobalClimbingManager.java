@@ -6,8 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Direction.Axis;
-import net.minecraft.core.Direction.AxisDirection;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -184,7 +182,13 @@ public class GlobalClimbingManager {
 		}
 	}
 
-	public static void onTeleport(ServerPlayer player, ServerLevel origin, ServerLevel destination) {
+	public static void onChangeWorld(ServerPlayer player, ServerLevel origin, ServerLevel destination) {
+		if (isClimbing(player)) {
+			stopClimbing(player);
+		}
+	}
+
+	public static void onTeleport(ServerPlayer player) {
 		if (isClimbing(player)) {
 			stopClimbing(player);
 		}

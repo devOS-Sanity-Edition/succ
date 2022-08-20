@@ -51,7 +51,7 @@ public class Succ implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register(GlobalClimbingManager::onPlayerJoin);
 		ServerPlayConnectionEvents.DISCONNECT.register(GlobalClimbingManager::onPlayerLeave);
 		ServerPlayerEvents.AFTER_RESPAWN.register(GlobalClimbingManager::onRespawn);
-		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(GlobalClimbingManager::onTeleport);
+		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(GlobalClimbingManager::onChangeWorld);
 		ClimbingSuctionCupEntity.networkingInit();
 		GlobalClimbingManager.networkingInit();
 	}
