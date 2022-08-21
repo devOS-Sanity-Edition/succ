@@ -59,7 +59,7 @@ Succ™ is on Maven.
 maven { url = "https://mvn.devos.one/snapshots/" }
 ```
 ```groovy
-modImplimentation("one.devos.nautical:succ:<version>")
+modImplementation("one.devos.nautical:succ:<version>")
 ```
 
 Which items are valid Suction Cups are determined by tags:
