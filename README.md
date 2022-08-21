@@ -2,7 +2,7 @@
 #### Look at me go!
 A Minecraft mod about suction cups. Made for Modfest: Singularity.
 
-![banner](./readme_assets/ModFest_Singularity_Banner.png)
+![Created for ModFest: Singularity](https://blob.jortage.com/blobs/5/d4d/5d4d14d96db2e2024d87cf5606cb7ce6421633a002e328947f85d210ba250ecb9f86de8df210dd031be2d4eafb0980494e7a1e8e99590a550abaa42d82768b9f)
 
 ### The Suction Cup
 The Suction Cup is a powerful tool. Using it, you can climb walls!
