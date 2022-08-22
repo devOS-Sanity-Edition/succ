@@ -5,14 +5,13 @@ import com.mojang.blaze3d.platform.InputConstants.Type;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 
-import net.minecraft.world.entity.player.Player;
 import one.devos.nautical.succ.mixin.KeyMappingAccessor;
 
 import org.lwjgl.glfw.GLFW;
 
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class SuccKeybinds {
@@ -33,48 +32,28 @@ public class SuccKeybinds {
 		map.put(SuctionCupLimb.RIGHT_FOOT, SuccKeybinds.RIGHT_FOOT);
 	});
 
-	public static void init() {
+	public static Iterator<KeyMapping> keepClimbBindsOutOfMap(Iterator<KeyMapping> original) {
+		return new WrappedKeyMappingIterator(original);
 	}
 
-	/**
-	 * Since KeyMapping.click() gets the KeyMapping via hashmap, duplicates will be ignored.
-	 * Climbing keys are defaulted to overlap with vanilla binds, so we need to update them manually.
-	 */
-	public static void fixStatuses(KeyMapping key) {
-		for (KeyMapping climbingKey : CLIMBING_KEYS) {
-			if (climbingKey.same(key)) {
-				incrementClickCount(climbingKey);
+	public static boolean onClick(KeyMapping keybind) {
+		if (LocalClimbingManager.INSTANCE != null) {
+			for (KeyMapping climbKey : SuccKeybinds.CLIMBING_KEYS) {
+				if (climbKey.same(keybind)) {
+					keybind.setDown(false);
+					incrementClickCount(climbKey);
+					return true;
+				}
 			}
 		}
-	}
-
-	public static void tick(Minecraft mc) {
-		Player player = mc.player;
-		if (player == null)
-			return;
-		// while climbing, prevent normal uses of the cup keys
-		if (GlobalClimbingManager.isClimbing(player)) {
-			for (KeyMapping climbingKey : CLIMBING_KEYS) {
-				unpressMatching(climbingKey);
-			}
-		}
-	}
-
-	private static void unpressMatching(KeyMapping keyMapping) {
-		for (KeyMapping key : Minecraft.getInstance().options.keyMappings) {
-			if (key != keyMapping && keyMapping.same(key)) {
-				setUnpressed(key);
-			}
-		}
-	}
-
-	private static void setUnpressed(KeyMapping key) {
-		((KeyMappingAccessor) key).succ$clickCount(0);
-		key.setDown(false);
+		return false;
 	}
 
 	private static void incrementClickCount(KeyMapping key) {
 		KeyMappingAccessor access = (KeyMappingAccessor) key;
 		access.succ$clickCount(access.succ$clickCount() + 1);
+	}
+
+	public static void init() {
 	}
 }
