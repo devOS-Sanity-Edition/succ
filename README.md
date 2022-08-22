@@ -2,6 +2,8 @@
 #### Look at me go!
 A Minecraft mod about suction cups. Made for Modfest: Singularity.
 
+![Created for ModFest: Singularity](https://blob.jortage.com/blobs/5/d4d/5d4d14d96db2e2024d87cf5606cb7ce6421633a002e328947f85d210ba250ecb9f86de8df210dd031be2d4eafb0980494e7a1e8e99590a550abaa42d82768b9f)
+
 ### The Suction Cup
 The Suction Cup is a powerful tool. Using it, you can climb walls!
 ![A player using suction cups to climb a wall](https://github.com/devOS-Sanity-Edition/succ/blob/1.19/readme_assets/on_wall.png?raw=true)
@@ -59,7 +61,7 @@ Succ™ is on Maven.
 maven { url = "https://mvn.devos.one/snapshots/" }
 ```
 ```groovy
-modImplimentation("one.devos.nautical:succ:<version>")
+modImplementation("one.devos.nautical:succ:<version>")
 ```
 
 Which items are valid Suction Cups are determined by tags:
