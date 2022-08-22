@@ -1,15 +1,15 @@
 package one.devos.nautical.succ;
 
-import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
-
-import org.quiltmc.qsl.networking.api.PacketByteBufs;
-
-import javax.annotation.Nullable;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import org.quiltmc.qsl.networking.api.PacketByteBufs;
+
+import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class ClimbingState {
 	public final UUID playerUuid;

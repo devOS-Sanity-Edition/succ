@@ -1,18 +1,17 @@
 package one.devos.nautical.succ;
 
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.platform.InputConstants.Type;
 
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
-
 import one.devos.nautical.succ.mixin.KeyMappingAccessor;
-
-import org.lwjgl.glfw.GLFW;
-
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 public class SuccKeybinds {
 	public static final KeyMapping LEFT_HAND = KeyBindingHelper.registerKeyBinding(

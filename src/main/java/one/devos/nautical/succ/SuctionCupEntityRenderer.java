@@ -1,9 +1,9 @@
 package one.devos.nautical.succ;
 
+import static one.devos.nautical.succ.SuccUtils.axisChoose;
+
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
@@ -21,16 +21,12 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
-import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.phys.Vec3;
 import one.devos.nautical.succ.model.DepressedSuctionCupModel;
 import one.devos.nautical.succ.model.SuctionCupModel;
-
-import static one.devos.nautical.succ.SuccUtils.axisChoose;
-import static one.devos.nautical.succ.SuccUtils.floatNormal;
 
 public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupEntity> {
 	public static final float LIMB_LENGTH = 13; // found through trial and error, the length of a limb in ModelPart space

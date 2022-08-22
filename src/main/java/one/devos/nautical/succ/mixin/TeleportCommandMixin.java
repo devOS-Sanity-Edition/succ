@@ -1,14 +1,6 @@
 package one.devos.nautical.succ.mixin;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket.RelativeArgument;
-import net.minecraft.server.commands.TeleportCommand;
-
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-
-import one.devos.nautical.succ.GlobalClimbingManager;
+import java.util.Set;
 
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +9,13 @@ import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Set;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket.RelativeArgument;
+import net.minecraft.server.commands.TeleportCommand;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import one.devos.nautical.succ.GlobalClimbingManager;
 
 @Mixin(TeleportCommand.class)
 public class TeleportCommandMixin {

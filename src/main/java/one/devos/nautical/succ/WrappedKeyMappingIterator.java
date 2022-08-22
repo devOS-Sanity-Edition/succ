@@ -1,12 +1,12 @@
 package one.devos.nautical.succ;
 
-import com.google.common.collect.AbstractIterator;
-
-import net.minecraft.client.KeyMapping;
+import java.util.Iterator;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
+import com.google.common.collect.AbstractIterator;
+
+import net.minecraft.client.KeyMapping;
 
 public class WrappedKeyMappingIterator extends AbstractIterator<KeyMapping> {
 	public final Iterator<KeyMapping> wrapped;

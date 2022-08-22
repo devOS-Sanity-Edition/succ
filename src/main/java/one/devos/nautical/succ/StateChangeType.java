@@ -1,11 +1,11 @@
 package one.devos.nautical.succ;
 
+import java.util.UUID;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
-
-import java.util.UUID;
 
 public enum StateChangeType {
 	ADD_OR_REPLACE {
