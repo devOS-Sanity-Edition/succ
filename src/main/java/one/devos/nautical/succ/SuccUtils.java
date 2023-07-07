@@ -1,12 +1,12 @@
 package one.devos.nautical.succ;
 
+import com.mojang.math.Vector3f;
+
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-
-import org.joml.Vector3f;
 
 public class SuccUtils {
 	// around Y axis
