@@ -19,7 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import one.devos.nautical.succ.Succ;
 
-@Environment(EnvType.CLIENT)
+import org.quiltmc.loader.api.minecraft.ClientOnly;
+
+@ClientOnly
 public class SuctionCupModel extends EntityModel<Player> {
 	public static final ModelLayerLocation LAYER = new ModelLayerLocation(Succ.id("suction_cup"), "main");
 	public static final ResourceLocation TEXTURE = Succ.id("textures/suction_cup.png");

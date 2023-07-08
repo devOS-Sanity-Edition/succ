@@ -7,6 +7,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Options;
 import net.minecraft.world.phys.Vec3;
 
+import org.quiltmc.loader.api.minecraft.ClientOnly;
+
 public enum SuctionCupMoveDirection {
 	UP_LEFT(-1, 1), UP(0, 1), UP_RIGHT(1, 1),
 	LEFT(-1, 0), NONE(0, 0), RIGHT(1, 0),
@@ -41,7 +43,7 @@ public enum SuctionCupMoveDirection {
 		return map.get(xOff).get(yOff);
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public static SuctionCupMoveDirection findFromInputs(Options options) {
 		int yOff = 0;
 		int xOff = 0;

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.quiltmc.loader.api.minecraft.ClientOnly;
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.PacketSender;
 import org.quiltmc.qsl.networking.api.PlayerLookup;
@@ -25,6 +26,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -178,8 +180,8 @@ public class GlobalClimbingManager {
 		}
 	}
 
-	public static void onChangeWorld(ServerPlayer player, ServerLevel origin, ServerLevel destination) {
-		if (isClimbing(player)) {
+	public static void onChangeWorld(Entity original, Entity copy, ServerLevel origin, ServerLevel destination) {
+		if (original instanceof ServerPlayer player && isClimbing(player)) {
 			stopClimbing(player);
 		}
 	}
@@ -218,12 +220,12 @@ public class GlobalClimbingManager {
 		ServerPlayNetworking.registerGlobalReceiver(REQUEST_STOP, GlobalClimbingManager::stopRequested);
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public static void clientNetworkingInit() {
 		ClientPlayNetworking.registerGlobalReceiver(STATE_CHANGE_PACKET, GlobalClimbingManager::handleChangeReceived);
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	private static void handleChangeReceived(Minecraft mc, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
 		StateChangeType type = buf.readEnum(StateChangeType.class);
 		type.handle(mc, buf);

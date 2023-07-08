@@ -18,7 +18,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.world.entity.Entity;
 import one.devos.nautical.succ.Succ;
 
-@Environment(EnvType.CLIENT)
+import org.quiltmc.loader.api.minecraft.ClientOnly;
+
+@ClientOnly
 public class DepressedSuctionCupModel extends EntityModel<Entity> {
 	public static final ModelLayerLocation LAYER = new ModelLayerLocation(Succ.id("depressed_suction_cup"), "main");
 

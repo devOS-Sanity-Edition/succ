@@ -2,6 +2,7 @@ package one.devos.nautical.succ;
 
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
+import org.quiltmc.qsl.entity.event.api.EntityWorldChangeEvents;
 import org.quiltmc.qsl.item.setting.api.QuiltItemSettings;
 import org.quiltmc.qsl.networking.api.ServerPlayConnectionEvents;
 
@@ -10,7 +11,6 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -63,8 +63,10 @@ public class Succ implements ModInitializer {
 
 		ServerPlayConnectionEvents.JOIN.register(GlobalClimbingManager::onPlayerJoin);
 		ServerPlayConnectionEvents.DISCONNECT.register(GlobalClimbingManager::onPlayerLeave);
+
+		//noinspection deprecation - no replacement yet
 		ServerPlayerEvents.AFTER_RESPAWN.register(GlobalClimbingManager::onRespawn);
-		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(GlobalClimbingManager::onChangeWorld);
+		EntityWorldChangeEvents.AFTER_ENTITY_WORLD_CHANGE.register(GlobalClimbingManager::onChangeWorld);
 		ClimbingSuctionCupEntity.networkingInit();
 		GlobalClimbingManager.networkingInit();
 	}

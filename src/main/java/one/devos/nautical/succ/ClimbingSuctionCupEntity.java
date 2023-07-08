@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+import org.quiltmc.loader.api.minecraft.ClientOnly;
 import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.PacketSender;
@@ -391,12 +392,12 @@ public class ClimbingSuctionCupEntity extends Entity {
 	}
 
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public static void clientNetworkingInit() {
 		ClientPlayNetworking.registerGlobalReceiver(SPAWN_PACKET, ClimbingSuctionCupEntity::handleSpawnOnClient);
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public static void handleSpawnOnClient(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
 		ClientboundAddEntityPacket addPacket = new ClientboundAddEntityPacket(buf);
 		buf.retain(); // save until after extra data is read
@@ -408,7 +409,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		});
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public void setSuctionFromClient(boolean suction) {
 		FriendlyByteBuf buf = PacketByteBufs.create();
 		buf.writeBoolean(suction);
@@ -416,7 +417,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		ClientPlayNetworking.send(UPDATE_SUCTION, buf);
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public void clientSuctionUpdate() {
 		LocalClimbingManager manager = LocalClimbingManager.INSTANCE;
 		if (manager != null) {
@@ -424,7 +425,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		}
 	}
 
-	@Environment(EnvType.CLIENT)
+	@ClientOnly
 	public void setMoveDirectionFromClient(SuctionCupMoveDirection direction) {
 		FriendlyByteBuf buf = PacketByteBufs.create();
 		buf.writeEnum(direction);
