@@ -24,7 +24,7 @@ import org.quiltmc.loader.api.minecraft.ClientOnly;
 @ClientOnly
 public class SuctionCupModel extends EntityModel<Player> {
 	public static final ModelLayerLocation LAYER = new ModelLayerLocation(Succ.id("suction_cup"), "main");
-	public static final ResourceLocation TEXTURE = Succ.id("textures/suction_cup.png");
+	public static final ResourceLocation TEXTURE = Succ.id("textures/item/suction_cup.png");
 
 	private final ModelPart bone;
 

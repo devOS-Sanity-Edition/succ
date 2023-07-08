@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench by Cart3r.",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "succ:suction_cup",
-		"particle": "succ:suction_cup"
+		"0": "succ:item/suction_cup",
+		"particle": "succ:item/suction_cup"
 	},
 	"elements": [
 		{
