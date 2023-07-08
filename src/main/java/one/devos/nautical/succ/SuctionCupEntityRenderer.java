@@ -4,7 +4,6 @@ import static one.devos.nautical.succ.SuccUtils.axisChoose;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
@@ -55,10 +54,10 @@ public class SuctionCupEntityRenderer extends EntityRenderer<ClimbingSuctionCupE
 		matrices.pushPose();
 
 		matrices.scale(0.75f, 0.75f, 0.75f);
-		matrices.mulPose(Vector3f.XN.rotationDegrees(90));
-		matrices.mulPose(Vector3f.ZN.rotationDegrees(entity.facing.toYRot() + 180));
+		matrices.mulPose(com.mojang.math.Axis.XN.rotationDegrees(90));
+		matrices.mulPose(com.mojang.math.Axis.ZN.rotationDegrees(entity.facing.toYRot() + 180));
 		if (entity.limb.hand) {
-			matrices.mulPose(Vector3f.YN.rotationDegrees(90));
+			matrices.mulPose(com.mojang.math.Axis.YN.rotationDegrees(90));
 			matrices.translate(0.3, -1.23, 0);
 		} else {
 			matrices.translate(-0.01, -1.23, 0.3);

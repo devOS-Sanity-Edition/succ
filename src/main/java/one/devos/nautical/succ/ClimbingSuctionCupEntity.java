@@ -14,6 +14,9 @@ import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -25,6 +28,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -151,6 +155,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		this.suction = entityData.get(SUCTION);
 		if (oldSuction == suction)
 			return;
+		Level level = level();
 		level.playSound(null, blockPosition(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.PLAYERS, 1, suction ? 0.5f : 1);
 		if (moveDirection == SuctionCupMoveDirection.NONE) {
 			setMoveTarget(suction ? stuckPos : unstuckPos);
@@ -244,7 +249,8 @@ public class ClimbingSuctionCupEntity extends Entity {
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket() {
+	@NotNull
+	public Packet<ClientGamePacketListener> getAddEntityPacket() {
 		FriendlyByteBuf buf = PacketByteBufs.create();
 		new ClientboundAddEntityPacket(this).write(buf);
 		writeExtraPacketData(buf);
@@ -269,7 +275,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 		this.limb = buf.readEnum(SuctionCupLimb.class);
 		UUID playerId = buf.readUUID();
 		this.facing = buf.readEnum(Direction.class);
-		this.climbingState = GlobalClimbingManager.getState(playerId, level.isClientSide());
+		this.climbingState = GlobalClimbingManager.getState(playerId, level().isClientSide());
 		this.climbingState.entities.put(limb, this);
 		setYRot(facing.toYRot());
 		this.stuckPos = SuccUtils.readVec(buf);
@@ -283,7 +289,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 
 	public Player getOwner() {
 		if (owner == null) {
-			owner = level.getPlayerByUUID(climbingState.playerUuid);
+			owner = level().getPlayerByUUID(climbingState.playerUuid);
 		}
 		return owner;
 	}
@@ -339,7 +345,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 	@Override
 	public void remove(RemovalReason reason) {
 		super.remove(reason);
-		if (!level.isClientSide()) {
+		if (!level().isClientSide()) {
 			if (getOwner() instanceof ServerPlayer player && GlobalClimbingManager.isClimbing(player)) {
 				GlobalClimbingManager.stopClimbing(player);
 			}

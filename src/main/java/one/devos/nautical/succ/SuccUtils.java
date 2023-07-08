@@ -1,6 +1,5 @@
 package one.devos.nautical.succ;
 
-import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
@@ -57,16 +56,5 @@ public class SuccUtils {
 
 	public static double axisChoose(Axis axis, Vec3 vec) {
 		return axis.choose(vec.x, vec.y, vec.z);
-	}
-
-	public static Vector3f floatNormal(Direction direction) {
-		return switch (direction) {
-			case DOWN -> Vector3f.YN;
-			case UP -> Vector3f.YP;
-			case NORTH -> Vector3f.ZN;
-			case SOUTH -> Vector3f.ZP;
-			case WEST -> Vector3f.XN;
-			case EAST -> Vector3f.XP;
-		};
 	}
 }

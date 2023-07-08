@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -23,8 +24,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class SuctionCupItem extends Item {
 	public static final EquipmentSlot[] CUP_SLOTS = { EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.FEET };
-	public static final TagKey<Item> HAND_CLIMBING_CUPS = TagKey.create(Registry.ITEM_REGISTRY, Succ.id("hand_climbing_cups"));
-	public static final TagKey<Item> FEET_CLIMBING_CUPS = TagKey.create(Registry.ITEM_REGISTRY, Succ.id("feet_climbing_cups"));
+	public static final TagKey<Item> HAND_CLIMBING_CUPS = TagKey.create(Registries.ITEM, Succ.id("hand_climbing_cups"));
+	public static final TagKey<Item> FEET_CLIMBING_CUPS = TagKey.create(Registries.ITEM, Succ.id("feet_climbing_cups"));
 	public static final Component TOO_FAR = Component.translatable("succ.wallTooFar");
 	public static final Component MISSING_CUPS = Component.translatable("succ.missingCups");
 	public static final Component OBSTRUCTED = Component.translatable("succ.obstructed");
@@ -96,7 +97,7 @@ public class SuctionCupItem extends Item {
 		Direction facing = clickedFace.getOpposite();
 		AABB bounds = player.getDimensions(Pose.STANDING).makeBoundingBox(player.position());
 		double height = bounds.maxY - bounds.minY;
-		BlockPos bottomToCheck = new BlockPos(headPos.getX(), clickPos.y - height, headPos.getZ());
+		BlockPos bottomToCheck = new BlockPos(headPos.getX(), (int) (clickPos.y - height), headPos.getZ());
 		for (BlockPos pos : BlockPos.betweenClosed(headPos, bottomToCheck)) {
 			BlockState state = level.getBlockState(pos);
 			if (!state.getCollisionShape(level, pos).isEmpty()) {

@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.PacketSender;
 import org.quiltmc.qsl.networking.api.PlayerLookup;
@@ -14,6 +12,8 @@ import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
@@ -51,7 +51,7 @@ public class GlobalClimbingManager {
 	}
 
 	public static GlobalClimbingManager get(Player player) {
-		return get(player.level);
+		return get(player.level());
 	}
 
 	public static GlobalClimbingManager get(Level level) {
@@ -134,10 +134,7 @@ public class GlobalClimbingManager {
 	}
 
 	private static void addCupEntities(ServerPlayer player, ClimbingState state, Vec3 clickPos, Direction facing) {
-		Level level = player.level;
-		if (level == null) {
-			return;
-		}
+		Level level = player.level();
 		for (SuctionCupLimb limb : SuctionCupLimb.values()) {
 			Vec3 cupPos = clickPos.add(SuccUtils.rotateVec(limb.cupOffset, facing.toYRot()));
 			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, cupPos, state, facing);
@@ -204,7 +201,7 @@ public class GlobalClimbingManager {
 						player.getGameProfile().getName(), playerPos, stopPos);
 				return;
 			}
-			if (!(player.level instanceof ServerLevel level)) {
+			if (!(player.level() instanceof ServerLevel level)) {
 				return;
 			}
 			stopClimbing(player);

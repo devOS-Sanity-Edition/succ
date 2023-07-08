@@ -5,14 +5,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.tuple.Triple;
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -135,7 +136,7 @@ public class LocalClimbingManager {
 
 	// true if trying to stop
 	private boolean tryStopClimbing(LocalPlayer player, ClientLevel level, ClimbingSuctionCupEntity entity, Vec3 newPos, SuctionCupMoveDirection direction) {
-		BlockPos blockPos = new BlockPos(newPos);
+		BlockPos blockPos = BlockPos.containing(newPos);
 		Direction facing = entity.facing;
 		BlockPos wallPos = blockPos.relative(facing);
 		BlockState wallState = level.getBlockState(wallPos);
@@ -182,7 +183,7 @@ public class LocalClimbingManager {
 
 	private boolean newCupPosNotObstructed(LocalPlayer player, ClientLevel level, ClimbingSuctionCupEntity entity,
 										   Vec3 newPos, SuctionCupMoveDirection direction) {
-		BlockPos newBlockPos = new BlockPos(newPos);
+		BlockPos newBlockPos = BlockPos.containing(newPos);
 		BlockState state = level.getBlockState(newBlockPos);
 		if (!state.getCollisionShape(level, newBlockPos).isEmpty()) {
 			sendNotification(player, level, direction, CUP_OBSTRUCTED_BLOCK);
