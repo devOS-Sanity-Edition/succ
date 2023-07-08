@@ -137,7 +137,7 @@ public class GlobalClimbingManager {
 
 	private static void addCupEntities(ServerPlayer player, ClimbingState state, Vec3 clickPos, Direction facing) {
 		Level level = player.level();
-		for (SuctionCupLimb limb : SuctionCupLimb.values()) {
+		for (SuctionCupLimb limb : SuctionCupLimb.VALUES) {
 			Vec3 cupPos = clickPos.add(SuccUtils.rotateVec(limb.cupOffset, facing.toYRot()));
 			ClimbingSuctionCupEntity entity = new ClimbingSuctionCupEntity(level, limb, cupPos, state, facing);
 			level.addFreshEntity(entity);

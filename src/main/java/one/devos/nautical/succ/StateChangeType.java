@@ -16,7 +16,7 @@ public enum StateChangeType {
 				GlobalClimbingManager.putState(state, true);
 				LocalPlayer player = Minecraft.getInstance().player;
 				if (state.isClimbing() && player != null && player.getUUID().equals(state.playerUuid)) {
-					LocalClimbingManager.INSTANCE = new LocalClimbingManager(mc);
+					LocalClimbingManager.INSTANCE = new LocalClimbingManager(player, state);
 				}
 			});
 		}
@@ -32,7 +32,7 @@ public enum StateChangeType {
 				state.facing = facing;
 				LocalPlayer player = mc.player;
 				if (player != null && player.getUUID().equals(playerId)) {
-					LocalClimbingManager.INSTANCE = state.isClimbing() ? new LocalClimbingManager(mc) : null;
+					LocalClimbingManager.INSTANCE = state.isClimbing() ? new LocalClimbingManager(player, state) : null;
 				}
 			});
 		}

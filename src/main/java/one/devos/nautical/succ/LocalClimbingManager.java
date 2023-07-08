@@ -1,17 +1,11 @@
 package one.devos.nautical.succ;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
-import org.apache.commons.lang3.tuple.Triple;
 import org.quiltmc.loader.api.minecraft.ClientOnly;
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
-
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -49,10 +43,10 @@ public class LocalClimbingManager {
 
 	public final ClimbingState state;
 	public final float minYaw, maxYaw, minPitch, maxPitch;
-	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> cups = new ArrayList<>();
-	public final List<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> liftedCups = new LinkedList<>();
 
-	Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> movedCup = null;
+	public final List<SuctionCupLimb> liftedCups = new ArrayList<>();
+
+	SuctionCupLimb movedCup = null;
 	private int initialCooldown = 10;
 	private int ticksTillStop = 0;
 	SuctionCupMoveDirection lastInputDirection = null;
@@ -64,13 +58,8 @@ public class LocalClimbingManager {
 	@Nullable
 	public static LocalClimbingManager INSTANCE = null;
 
-	public LocalClimbingManager(Minecraft mc) {
-		this.state = GlobalClimbingManager.getState(mc.player);
-		this.state.entities.forEach((limb, entity) -> {
-			KeyMapping key = SuccKeybinds.LIMBS_TO_KEYS.get(limb);
-			cups.add(Triple.of(key, limb, entity));
-		});
-		LocalPlayer player = mc.player;
+	public LocalClimbingManager(LocalPlayer player, ClimbingState state) {
+		this.state = state;
 		player.yBodyRot = player.getYRot();
 		float playerYaw = player.getYRot();
 		minYaw = playerYaw - (DEFAULT_ROTATION_RANGE / 2f);
@@ -81,14 +70,14 @@ public class LocalClimbingManager {
 	}
 
 	public static void tick(Minecraft mc, ClientLevel level) {
-		if (INSTANCE != null) {
+		if (INSTANCE != null && INSTANCE.isValid()) {
 			INSTANCE.tickClimbing(mc, level);
 		}
 	}
 
 	// runs every frame
 	public static void clientTick(Minecraft mc) {
-		if (INSTANCE != null) {
+		if (INSTANCE != null && INSTANCE.isValid()) {
 			INSTANCE.frameTick(mc);
 		}
 	}
@@ -114,7 +103,7 @@ public class LocalClimbingManager {
 
 	private void moveSelectedCup(LocalPlayer player, ClientLevel level, Options options) {
 		if (movedCup != null) {
-			ClimbingSuctionCupEntity entity = movedCup.getRight();
+			ClimbingSuctionCupEntity entity = state.entities.get(movedCup);
 			SuctionCupMoveDirection direction = SuctionCupMoveDirection.findFromInputs(options);
 			SuctionCupMoveDirection currentDirection = entity.getMoveDirection();
 			if (currentDirection != direction) {
@@ -169,8 +158,8 @@ public class LocalClimbingManager {
 	private boolean newCupPosCloseEnough(LocalPlayer player, ClientLevel level, ClimbingSuctionCupEntity entity,
 										 Vec3 newPos, SuctionCupMoveDirection direction) {
 		double largestDistance = 0;
-		for (Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup : cups) {
-			ClimbingSuctionCupEntity otherEntity = cup.getRight();
+		for (SuctionCupLimb limb : SuctionCupLimb.VALUES) {
+			ClimbingSuctionCupEntity otherEntity = state.entities.get(limb);
 			if (entity != otherEntity) {
 				largestDistance = Math.max(largestDistance, otherEntity.position().distanceTo(newPos));
 			}
@@ -195,8 +184,8 @@ public class LocalClimbingManager {
 			sendNotification(player, level, direction, SuctionCupItem.OBSTRUCTED_LIQUID);
 			return false;
 		}
-		for (Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> cup : cups) {
-			ClimbingSuctionCupEntity otherEntity = cup.getRight();
+		for (SuctionCupLimb limb : SuctionCupLimb.VALUES) {
+			ClimbingSuctionCupEntity otherEntity = this.state.entities.get(limb);
 			if (entity != otherEntity) {
 				AABB otherBounds = otherEntity.getBoundingBox();
 				AABB newBounds = entity.getDimensions(Pose.STANDING).makeBoundingBox(newPos);
@@ -222,36 +211,31 @@ public class LocalClimbingManager {
 	private void handleSuctionStateChanges() {
 		// give a short cooldown after starting to climb
 		if (initialCooldown > 0) {
-			cups.forEach(triple -> {
-				KeyMapping key = triple.getLeft();
+			for (KeyMapping key : SuccKeybinds.CLIMBING_KEYS) {
 				while (key.consumeClick()); // discard any clicks that happen here
-			});
+			}
 			return;
 		}
-		cups.forEach(triple -> {
-			KeyMapping key = triple.getLeft();
-			ClimbingSuctionCupEntity entity = triple.getRight();
+		for (SuctionCupLimb limb : SuctionCupLimb.VALUES) {
+			KeyMapping key = SuccKeybinds.LIMBS_TO_KEYS.get(limb);
+			ClimbingSuctionCupEntity entity = state.entities.get(limb);
 			if (key.consumeClick()) {
 				boolean suction = entity.getSuction();
 				entity.setSuctionFromClient(!suction);
 			}
 			while (key.consumeClick()); // get rid of extras
-		});
+		}
 	}
 
 	public void entitySuctionUpdated(ClimbingSuctionCupEntity entity) {
-		Optional<Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity>> maybeTriple =
-				cups.stream().filter(t -> t.getRight() == entity).findFirst();
-		maybeTriple.ifPresent(triple -> {
-			if (entity.getSuction()) { // placed down
-				liftedCups.remove(triple);
-				movedCup = liftedCups.isEmpty() ? null : liftedCups.get(liftedCups.size() - 1);
-				lastInputDirection = null;
-			} else { // picked up
-				movedCup = triple;
-				liftedCups.add(triple);
-			}
-		});
+		if (entity.getSuction()) { // placed down
+			liftedCups.remove(entity.limb);
+			movedCup = liftedCups.isEmpty() ? null : liftedCups.get(liftedCups.size() - 1);
+			lastInputDirection = null;
+		} else { // picked up
+			movedCup = entity.limb;
+			liftedCups.add(entity.limb);
+		}
 	}
 
 	private void handlePlayerMovement(LocalPlayer player, float partialTicks) {
@@ -265,8 +249,8 @@ public class LocalClimbingManager {
 		double totalX = 0;
 		double totalY = 0;
 		double totalZ = 0;
-		for (Triple<KeyMapping, SuctionCupLimb, ClimbingSuctionCupEntity> triple : cups) {
-			ClimbingSuctionCupEntity cup = triple.getRight();
+		for (SuctionCupLimb limb : SuctionCupLimb.VALUES) {
+			ClimbingSuctionCupEntity cup = state.entities.get(limb);
 			Vec3 toUse = cup.isBeingPlaced() ? cup.getPosition(partialTicks) : cup.getStuckPos();
 			totalX += Mth.lerp(partialTicks, toUse.x, cup.xOld);
 			totalY += Mth.lerp(partialTicks, toUse.y, cup.yOld);
@@ -286,5 +270,9 @@ public class LocalClimbingManager {
 		double finalY = Mth.lerp(partialTicks * 2, oldPos.y, averageY);
 		double finalZ = Mth.lerp(partialTicks * 2, oldPos.z, averageZ);
 		player.setPos(finalX, finalY, finalZ);
+	}
+
+	public boolean isValid() {
+		return state.entities.size() == 4;
 	}
 }
