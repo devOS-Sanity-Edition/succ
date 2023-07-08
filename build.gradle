@@ -1,6 +1,5 @@
 plugins {
 	id "org.quiltmc.loom" version "1.0.+"
-	id "io.github.juuxel.loom-quiltflower" version "1.8.+"
 	id "maven-publish"
 }
 archivesBaseName = project.archives_base_name
@@ -23,7 +22,7 @@ dependencies {
 	minecraft("com.mojang:minecraft:$minecraft_version")
 	mappings loom.layered {
 		it.mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$qm_build:intermediary-v2")
-		it.officialMojangMappings { setNameSyntheticMembers(false) }
+		it.officialMojangMappings { nameSyntheticMembers = false }
 	}
 	modImplementation("org.quiltmc:quilt-loader:$quilt_loader")
 	modImplementation("org.quiltmc.quilted-fabric-api:quilted-fabric-api:$quilted_fabric_api")
@@ -36,69 +35,36 @@ dependencies {
 	modLocalRuntime("dev.emi:emi-fabric:$emi_version")
 }
 
-task buildOrPublish {
+tasks.register("buildOrPublish") {
 	group = "build"
-	String mavenUser = System.getenv().MAVEN_USER
+	String mavenUser = System.getenv("MAVEN_USER")
 	if (mavenUser != null && !mavenUser.isEmpty()) {
-		dependsOn(tasks.getByName("publish"))
+		dependsOn(tasks.named("publish"))
 		println("prepared for publish")
 	} else {
-		dependsOn(tasks.getByName("build"))
+		dependsOn(tasks.named("build"))
 		println("prepared for build")
 	}
 }
 
 processResources {
-	Map<String, String> properties = new HashMap<>()
-	properties.put("version", version)
-	properties.put("loader_version", quilt_loader)
-	properties.put("qfapi_version", quilted_fabric_api)
-	properties.put("minecraft_version", minecraft_version)
+	Map<String, Object> properties = [
+	    "version": version,
+		"loader_version": quilt_loader,
+		"qfapi_version": quilted_fabric_api,
+		"minecraft_version": minecraft_version
+	]
 
-	properties.forEach((k, v) -> inputs.property(k, v))
+	properties.forEach(inputs::property)
 
 	filesMatching("quilt.mod.json") {
 		expand properties
 	}
 }
 
-sourceSets {
-	testmod {
-		compileClasspath += main.compileClasspath
-		compileClasspath += main.output
-		runtimeClasspath += main.runtimeClasspath
-		runtimeClasspath += main.output
-	}
-}
-
-loom {
-	runs {
-		testmodClient {
-			client()
-			name "Testmod Client"
-			source sourceSets.testmod
-			runDir "run/test"
-		}
-		testmodServer {
-			server()
-			name "Testmod Server"
-			source sourceSets.testmod
-			runDir "run/test_server"
-		}
-		gametest {
-			server()
-			name "Test"
-			source sourceSets.testmod
-			vmArg "-Dfabric-api.gametest"
-			vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
-			runDir "run/gametest_server"
-		}
-	}
-}
-
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	it.options.release = 17
+	it.options.release.set(17)
 }
 
 java {
@@ -117,19 +83,23 @@ jar {
 
 publishing {
 	publications {
-		mavenJava(MavenPublication) {
-			from components.java
+		register("mavenJava", MavenPublication) {
+			artifactId = archivesBaseName + "_${project.name}"
+			//noinspection GroovyAssignabilityCheck
+			from(components.java)
 		}
 	}
 
 	repositories {
 		maven {
-			url = "https://mvn.devos.one/${System.getenv().PUBLISH_SUFFIX}/"
+			url = "https://mvn.devos.one/${System.getenv("PUBLISH_SUFFIX")}/"
 			credentials {
-				username = System.getenv().MAVEN_USER
-				password = System.getenv().MAVEN_PASS
+				username = System.getenv("MAVEN_USER")
+				password = System.getenv("MAVEN_PASS")
 			}
-			authentication { basic(BasicAuthentication) }
+			authentication {
+				create("basic", BasicAuthentication)
+			}
 		}
 	}
 }
