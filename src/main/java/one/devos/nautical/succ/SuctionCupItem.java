@@ -1,9 +1,10 @@
 package one.devos.nautical.succ;
 
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +15,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -22,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class SuctionCupItem extends Item {
+public class SuctionCupItem extends Item implements Equipable {
 	public static final EquipmentSlot[] CUP_SLOTS = { EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.FEET };
 	public static final TagKey<Item> HAND_CLIMBING_CUPS = TagKey.create(Registries.ITEM, Succ.id("hand_climbing_cups"));
 	public static final TagKey<Item> FEET_CLIMBING_CUPS = TagKey.create(Registries.ITEM, Succ.id("feet_climbing_cups"));
@@ -38,12 +40,19 @@ public class SuctionCupItem extends Item {
 	}
 
 	@Override
+	@NotNull
 	public InteractionResult useOn(UseOnContext context) {
 		Player player = context.getPlayer();
 		if (player instanceof ServerPlayer serverPlayer) {
 			tryStartClimbing(serverPlayer, context);
 		}
 		return InteractionResult.FAIL;
+	}
+
+	@Override
+	@NotNull
+	public EquipmentSlot getEquipmentSlot() {
+		return EquipmentSlot.HEAD;
 	}
 
 	public void tryStartClimbing(ServerPlayer player, UseOnContext ctx) {
@@ -56,9 +65,6 @@ public class SuctionCupItem extends Item {
 			return;
 		}
 		Level level = ctx.getLevel();
-		if (level == null) {
-			return;
-		}
 		if (missingCups(player)) {
 			fail(player, MISSING_CUPS);
 			return;
@@ -74,7 +80,7 @@ public class SuctionCupItem extends Item {
 			return;
 		}
 		// offset to the center of the block to prevent getting stuck in adjacent walls
-		clickPos = new Vec3(Math.floor(headPos.getX()) + 0.5, clickPos.y, Math.floor(headPos.getZ()) + 0.5);
+		clickPos = new Vec3(headPos.getX() + 0.5, clickPos.y, headPos.getZ() + 0.5);
 		GlobalClimbingManager.startClimbing(player, clickPos, clickedFace);
 	}
 
