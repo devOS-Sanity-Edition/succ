@@ -8,19 +8,15 @@ import java.util.function.BiConsumer;
 
 import org.quiltmc.loader.api.minecraft.ClientOnly;
 import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
+import org.quiltmc.qsl.entity.networking.api.extended_spawn_data.QuiltExtendedSpawnDataEntity;
 import org.quiltmc.qsl.networking.api.PacketByteBufs;
 import org.quiltmc.qsl.networking.api.PacketSender;
 import org.quiltmc.qsl.networking.api.ServerPlayNetworking;
 import org.quiltmc.qsl.networking.api.client.ClientPlayNetworking;
 
 import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
@@ -28,9 +24,6 @@ import net.minecraft.core.Direction.Plane;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -47,8 +40,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class ClimbingSuctionCupEntity extends Entity {
-	public static final ResourceLocation SPAWN_PACKET = Succ.id("climbing_suction_cup_spawn");
+public class ClimbingSuctionCupEntity extends Entity implements QuiltExtendedSpawnDataEntity {
 	public static final ResourceLocation UPDATE_SUCTION = Succ.id("update_suction");
 	public static final ResourceLocation UPDATE_DIRECTION = Succ.id("update_direction");
 
@@ -250,15 +242,7 @@ public class ClimbingSuctionCupEntity extends Entity {
 	}
 
 	@Override
-	@NotNull
-	public Packet<ClientGamePacketListener> getAddEntityPacket() {
-		FriendlyByteBuf buf = PacketByteBufs.create();
-		new ClientboundAddEntityPacket(this).write(buf);
-		writeExtraPacketData(buf);
-		return ServerPlayNetworking.createS2CPacket(SPAWN_PACKET, buf);
-	}
-
-	public void writeExtraPacketData(FriendlyByteBuf buf) {
+	public void writeAdditionalSpawnData(FriendlyByteBuf buf) {
 		buf.writeEnum(limb);
 		buf.writeUUID(climbingState.playerUuid);
 		buf.writeEnum(facing);
@@ -272,7 +256,8 @@ public class ClimbingSuctionCupEntity extends Entity {
 		}
 	}
 
-	public void readExtraPacketData(FriendlyByteBuf buf) {
+	@Override
+	public void readAdditionalSpawnData(FriendlyByteBuf buf) {
 		this.limb = buf.readEnum(SuctionCupLimb.class);
 		UUID playerId = buf.readUUID();
 		this.facing = buf.readEnum(Direction.class);
@@ -388,24 +373,6 @@ public class ClimbingSuctionCupEntity extends Entity {
 				ClimbingSuctionCupEntity entity = state.entities.get(limb);
 				consumer.accept(state, entity);
 			}
-		});
-	}
-
-
-	@ClientOnly
-	public static void clientNetworkingInit() {
-		ClientPlayNetworking.registerGlobalReceiver(SPAWN_PACKET, ClimbingSuctionCupEntity::handleSpawnOnClient);
-	}
-
-	@ClientOnly
-	public static void handleSpawnOnClient(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
-		ClientboundAddEntityPacket addPacket = new ClientboundAddEntityPacket(buf);
-		buf.retain(); // save until after extra data is read
-		client.execute(() -> {
-			addPacket.handle(handler);
-			ClimbingSuctionCupEntity entity = (ClimbingSuctionCupEntity) client.level.getEntity(addPacket.getId());
-			entity.readExtraPacketData(buf);
-			buf.release();
 		});
 	}
 

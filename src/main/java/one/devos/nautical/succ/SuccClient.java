@@ -16,7 +16,6 @@ public class SuccClient implements ClientModInitializer {
 	public void onInitializeClient(ModContainer mod) {
 		SuccKeybinds.init();
 		GlobalClimbingManager.clientNetworkingInit();
-		ClimbingSuctionCupEntity.clientNetworkingInit();
 
 		EntityModelLayerRegistry.registerModelLayer(SuctionCupModel.LAYER, SuctionCupModel::getLayerDefinition);
 		EntityModelLayerRegistry.registerModelLayer(DepressedSuctionCupModel.LAYER, DepressedSuctionCupModel::getLayerDefinition);
