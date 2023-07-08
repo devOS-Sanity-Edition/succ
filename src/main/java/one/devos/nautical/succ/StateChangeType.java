@@ -30,7 +30,7 @@ public enum StateChangeType {
 			mc.execute(() -> {
 				ClimbingState state = GlobalClimbingManager.getState(playerId, true);
 				state.facing = facing;
-				LocalPlayer player = Minecraft.getInstance().player;
+				LocalPlayer player = mc.player;
 				if (player != null && player.getUUID().equals(playerId)) {
 					LocalClimbingManager.INSTANCE = state.isClimbing() ? new LocalClimbingManager(mc) : null;
 				}

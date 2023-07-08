@@ -8,6 +8,7 @@ import org.quiltmc.qsl.networking.api.client.ClientPlayConnectionEvents;
 
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import one.devos.nautical.succ.commands.SuccClientCommands;
 import one.devos.nautical.succ.model.DepressedSuctionCupModel;
 import one.devos.nautical.succ.model.SuctionCupModel;
 
@@ -16,6 +17,7 @@ public class SuccClient implements ClientModInitializer {
 	public void onInitializeClient(ModContainer mod) {
 		SuccKeybinds.init();
 		GlobalClimbingManager.clientNetworkingInit();
+		SuccClientCommands.init();
 
 		EntityModelLayerRegistry.registerModelLayer(SuctionCupModel.LAYER, SuctionCupModel::getLayerDefinition);
 		EntityModelLayerRegistry.registerModelLayer(DepressedSuctionCupModel.LAYER, DepressedSuctionCupModel::getLayerDefinition);

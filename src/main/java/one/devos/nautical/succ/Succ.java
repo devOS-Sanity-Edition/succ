@@ -8,6 +8,8 @@ import org.quiltmc.qsl.networking.api.ServerPlayConnectionEvents;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 
+import one.devos.nautical.succ.commands.SuccCommands;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,7 @@ public class Succ implements ModInitializer {
 		EntityWorldChangeEvents.AFTER_ENTITY_WORLD_CHANGE.register(GlobalClimbingManager::onChangeWorld);
 		ClimbingSuctionCupEntity.networkingInit();
 		GlobalClimbingManager.networkingInit();
+		SuccCommands.init();
 	}
 
 	public static ResourceLocation id(String path) {
