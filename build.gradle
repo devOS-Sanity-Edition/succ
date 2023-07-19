@@ -30,7 +30,7 @@ dependencies {
 	// dev env
 	modLocalRuntime("maven.modrinth:suggestion-tweaker:$suggestion_tweaker_version")
 	modLocalRuntime("me.shedaniel.cloth:cloth-config-fabric:$cloth_config_version")
-	modLocalRuntime("curse.maven:jade-324717:$jade_file")
+	modLocalRuntime("maven.modrinth:jade:$jade_version")
 	modLocalRuntime("com.terraformersmc:modmenu:$mod_menu_version")
 	modLocalRuntime("dev.emi:emi-fabric:$emi_version")
 }
