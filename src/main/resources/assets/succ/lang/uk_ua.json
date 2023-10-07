@@ -1,0 +1,34 @@
+{
+  "entity.succ.suction_cup": "Присосок",
+  "item.succ.suction_cup": "Присосок",
+  "item.succ.suction_cup_boots": "Чоботи з присосками",
+  "key.categories.succ": "Succ™",
+  "key.succ.leftHand": "Присосок лівої руки",
+  "key.succ.rightHand": "Присосок правої руки",
+  "key.succ.leftFoot": "Присосок лівої ноги",
+  "key.succ.rightFoot": "Присосок правої ноги",
+  "key.succ.stopClimbing": "Припинити лазіння",
+
+  "succ.wallTooFar": "Ця стіна надто далеко, щоб лізти.",
+  "succ.missingCups": "Вам потрібні присоски на всіх 4 кінцівках, щоб лізти.",
+  "succ.obstructed": "Лазіння тут помістить вас усередину блока.",
+  "succ.onlyWalls": "Ви можете лізти лише по стінах.",
+  "succ.notEnoughWall": "Тут не вистачає стіни, щоб лізти.",
+
+  "succ.cupObstructedLiquid": "Рідина запобігає присмоктуванню ваших присосок.",
+
+  "succ.tooFar": "Ви не можете дотягтись, надто далеко.",
+  "succ.cupObstructedBlock": "Блок заважає.",
+  "succ.cupObstructedOther": "Інший присосок заважає.",
+  "succ.cupObstructedBadWall": "Присосок не може присмоктатися до цієї стіни.",
+
+  "succ.stopClimbing": "Припинити лізти через %s...",
+
+  "advancements.succ.twister_champion.title": "Чемпіон твістера",
+  "advancements.succ.twister_champion.description": "Ай ой ай-яй-яй мої кістки",
+
+  "itemGroup.succ": "Succ™",
+
+  "tag.succ.hand_climbing_cups": "Присоски на руки для лазіння",
+  "tag.succ.feet_climbing_cups": "Присоски на ноги для лазіння"
+}
